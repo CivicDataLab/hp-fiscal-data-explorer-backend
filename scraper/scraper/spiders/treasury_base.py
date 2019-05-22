@@ -31,7 +31,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         filepath = os.path.join(DATASET_PATH, filename)
 
         # don't request the same dataset again if it's already collected previously
-        if not os.path.exists(filepath):
+        if not os.path.exists(filepath) or not os.stat(filepath).st_size:
             query_params = {
                 'from_date': params['start'],  # format: yyyymmdd
                 'To_date': params['end'],      # format: yyyymmdd
@@ -90,20 +90,17 @@ class TreasuryBaseSpider(scrapy.Spider):
             treasury_name = treasury.xpath('.//text()').extract_first()
             treasury_name = parsing_utils.clean_text(treasury_name)
 
-            ddo_codes = self.get_ddo_codes(self.treasury_id)  #pylint: disable=no-member
-
-            for ddo in ddo_codes:
-                ddo_code = ddo[0]
-
+            for ddo_code in self.get_ddo_codes(treasury_id):
                 params = {
                     'start': self.start,  #pylint: disable=no-member
                     'end': self.end,  #pylint: disable=no-member
                     'query_id': query_id,
                     'treasury_id': treasury_id,
+                    'treasury_name': treasury_name,
                     'ddo_code': ddo_code,
                     'query_name': query_name
                 }
-                yield self.make_dataset_request(params)
+                return self.make_dataset_request(params)
 
     def parse_dataset(self, response):  #pylint: disable=no-self-use
         '''
@@ -114,7 +111,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         heads = response.xpath('//table//tr[@class="popupheadingeKosh"]//td//text()').extract()
 
         # all other rows
-        data_rows = response.xpath('//table//tr[@class*=pope]')
+        data_rows = response.xpath('//table//tr[contains(@class, "pope")]')
 
         if not data_rows:
             return
@@ -137,7 +134,7 @@ class TreasuryBaseSpider(scrapy.Spider):
                     # we need to extract each cell and set empty string when no data found.
                     # by default scrapy omits the cell if it's empty and it can cause inconsistent row lengths.  # pylint:disable=line-too-long
                     observation.append(col.xpath('./text()').extract_first(' '))
-        writer.writerow(observation)
+                writer.writerow(observation)
 
     def handle_err(self, failure):
         '''
