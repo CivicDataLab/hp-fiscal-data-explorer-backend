@@ -12,6 +12,10 @@ from scraper.utils import parsing_utils
 
 
 class TreasuryBaseSpider(scrapy.Spider):
+    '''
+    Base spider for HP treasury. It has methods for making dataset requests
+    for a given treasury's given ddo with a given query in a given date range.
+    '''
     allowed_domains = ['himkosh.hp.nic.in']
 
     def __init__(self, *args, **kwargs):
@@ -21,7 +25,7 @@ class TreasuryBaseSpider(scrapy.Spider):
 
     def make_dataset_request(self, params):
         '''
-        Create request for collecting datasets.
+        Construct and yield a scrapy request for a dataset.
         '''
         # generate a filepath to store the dataset in.
         filename = parsing_utils.make_dataset_file_name({
@@ -31,6 +35,8 @@ class TreasuryBaseSpider(scrapy.Spider):
         filepath = os.path.join(DATASET_PATH, filename)
 
         # don't request the same dataset again if it's already collected previously
+        # check if a file with a particular dataset name exist, if it does then
+        # also check if it's empty or not, if it's empty we request it again.
         if not os.path.exists(filepath) or not os.stat(filepath).st_size:
             query_params = {
                 'from_date': params['start'],  # format: yyyymmdd
@@ -47,6 +53,12 @@ class TreasuryBaseSpider(scrapy.Spider):
             )
 
     def start_requests(self):
+        '''
+        This method is called when the spider opens.
+        It will check if arguments for specific query, treasury were provided.
+        If they were provided then it'll query specifically for that otherwise it goes to
+        the expenditures' home page and collects for all the treasuries.
+        '''
         if (
                 not hasattr(self, 'query_id')
                 and not hasattr(self, 'treasury_id')
@@ -69,7 +81,10 @@ class TreasuryBaseSpider(scrapy.Spider):
         '''
         Collect queryable params and make dataset queries.
         Parameters to be collected are:
-        query_id, HODCode, query_text
+
+        query_id,
+        HODCode: constructed by joining treasury_code-ddo_code
+        query_text
         '''
         # collect details of query 10 that gives consolidated data.
         query_elem = response.xpath('id("ddlQuery")/option')[self.query_index]  # pylint: disable=no-member
@@ -105,7 +120,7 @@ class TreasuryBaseSpider(scrapy.Spider):
     def parse_dataset(self, response):  #pylint: disable=no-self-use
         '''
         Parse each dataset page to collect the data in a csv file.
-        output: a csv file named with query_treasury_year(all lowercase) format.
+        output: a csv file named with query_treasury-ddo_year(all lowercase) format.
         '''
         # header row for the file.
         heads = response.xpath('//table//tr[@class="popupheadingeKosh"]//td//text()').extract()
