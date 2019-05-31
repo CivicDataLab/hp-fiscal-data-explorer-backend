@@ -16,10 +16,10 @@ class DDOCodeCollector(scrapy.Spider):
 
     def parse(self, response):
         # create form request that will automatically collect form data from the page response.
-        fr = scrapy.FormRequest.from_response(response, callback=self.collect_ddo_code)
+        form_req = scrapy.FormRequest.from_response(response, callback=self.collect_ddo_code)
 
         # convert the form body to dictionary
-        formdata = parse_qs(fr.body)
+        formdata = parse_qs(form_req.body)
 
         # remove the param that will collect datasets.
         # we are only interested in ddo codes which will get from ajax response.
@@ -36,8 +36,8 @@ class DDOCodeCollector(scrapy.Spider):
 
             # now for every treasury code make the ajax request that'll fetch the ddos.
             formdata[b'ctl00$MainContent$ddlTreaCode'] = treasury_code
-            yield fr.replace(body=urlencode(formdata),
-                             meta={'treasury': treasury_code})
+            yield form_req.replace(body=urlencode(formdata),
+                                   meta={'treasury': treasury_code})
 
     def collect_ddo_code(self, response):  # pylint:disable=no-self-use
         '''

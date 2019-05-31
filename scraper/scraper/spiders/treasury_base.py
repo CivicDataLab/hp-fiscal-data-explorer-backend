@@ -29,7 +29,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         '''
         # generate a filepath to store the dataset in.
         filename = parsing_utils.make_dataset_file_name({
-            'query': params['query_name'], 'treasury': params['treasury_name'],
+            'query': self.name, 'treasury': params['treasury_name'],
             'ddo': params['ddo_code'], 'date': '{}-{}'.format(params['start'], params['end'])
         })
         filepath = os.path.join(DATASET_PATH, filename)
