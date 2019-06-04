@@ -8,7 +8,9 @@ Himachal Pradesh Fiscal Data explorer for [Open Budgets India](https://openbudge
 - `git clone https://github.com/CivicDataLab/hp-fiscal-data-explorer.git`
 - `pip install pipenv`
 - `cd scraper`
+- `cp  scraper/settings/settings.py scraper/settings/local.py`
 - `pipenv install --three --ignore-pipfile`
+- Edit the `scraper/settings/local.py` with setting values you want to keep like `DOWNLOAD_DELAY`, `CONCURRENT_REQUESTS` and custom settings like `DATASETS_PATH` etc.
 
 #### To Activate the environment once setup.
 
