@@ -7,6 +7,8 @@ matrix:
         - '3.6.7'
       cache:
         pip: true
+      before_install:
+        - cd scraper
       install:
         - pip install pipenv anybadge
         - pipenv install --ignore-pipfile 
