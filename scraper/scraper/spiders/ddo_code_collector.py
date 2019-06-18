@@ -1,3 +1,6 @@
+'''
+Spider for collecting ddo codes.
+'''
 import csv
 import os
 from urllib.parse import urlencode, parse_qs
@@ -39,7 +42,7 @@ class DDOCodeCollector(scrapy.Spider):
             yield form_req.replace(body=urlencode(formdata),
                                    meta={'treasury': treasury_code})
 
-    def collect_ddo_code(self, response):  # pylint:disable=no-self-use
+    def collect_ddo_code(self, response):
         '''
         create a CSV file with DDO names and DDO Codes.
         '''
