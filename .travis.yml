@@ -12,7 +12,7 @@ matrix:
         - pipenv install --ignore-pipfile 
       script:
         - find . -iname "*.py" | xargs pylint --rcfile=.pylintrc --output-format=text > pylint.out || python -c "import sys;sys.exit($? in [1,32])" | cat pylint.out
-        - score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.out)
+        - export score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.out)
         - echo "Pylint score was $score"
         - anybadge --value=$score --file=pylint.svg pylint
         - if [ "$score" -lt 8 ]; then exit 1 fi
