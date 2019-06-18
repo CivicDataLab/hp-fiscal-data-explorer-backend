@@ -15,3 +15,4 @@ matrix:
         - score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.out)
         - echo "Pylint score was $score"
         - anybadge --value=$score --file=pylint.svg pylint
+        - if [ "$score" -lt 8 ]; then exit 1 fi
