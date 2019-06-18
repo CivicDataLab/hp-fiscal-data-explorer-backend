@@ -11,7 +11,7 @@ matrix:
         - pip install pipenv anybadge
         - pipenv install --ignore-pipfile 
       script:
-        - FILES=$(find . -iname "*.py") && pylint $FILES --rcfile=.pylintrc --output-format=text > pylint.out || python -c "import sys;sys.exit($? in [1,32])" | cat pylint.out
+        - find . -iname "*.py" | xargs pylint --rcfile=.pylintrc --output-format=text > pylint.out || python -c "import sys;sys.exit($? in [1,32])" | cat pylint.out
         - score=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.out)
         - echo "Pylint score was $score"
         - anybadge --value=$score --file=pylint.svg pylint
