@@ -10,7 +10,9 @@ Himachal Pradesh Fiscal Data explorer for [Open Budgets India](https://openbudge
 - `cd scraper`
 - `cp  scraper/settings/settings.py scraper/settings/local.py`
 - `pipenv install --three --ignore-pipfile`
+- `cp scraper/settings/settings.py scraper/settings/local.py`
 - Edit the `scraper/settings/local.py` with setting values you want to keep like `DOWNLOAD_DELAY`, `CONCURRENT_REQUESTS` and custom settings like `DATASETS_PATH` etc.
+- create a `datasets` directory at the path specified by `DATASET_PATH` variable. e.g. `hp-fiscal-data-explorer/scraper/datasets` if you didn't update the default value of the variable `DATASET_PATH`.
 
 #### To Activate the environment once setup.
 
