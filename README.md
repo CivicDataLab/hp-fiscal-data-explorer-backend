@@ -28,4 +28,6 @@ For Treasury Expenditure.
 For Treasury Receipts.
 - `scrapy crawl treasury_receipts -a start=20190501 -a end=20190531`
 
-NOTE: the arguments `start` and `end` specifies the date range for datasets. The date format is `yyyymmdd`.
+NOTES:
+- the arguments `start` and `end` specifies the date range for datasets. The date format is `yyyymmdd`.
+- the datasets will be `CSV` files with name in the format: `treasury_expenditures_<treasury>_<ddo>_<timestamp>.csv` for expenditures.
