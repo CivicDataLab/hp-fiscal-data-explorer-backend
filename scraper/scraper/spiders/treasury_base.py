@@ -46,11 +46,12 @@ class TreasuryBaseSpider(scrapy.Spider):
                 'Str': params['query_name']
             }
 
-            yield scrapy.Request(
+            return scrapy.Request(
                 self.query_url.format(urlencode(query_params)), # pylint: disable=no-member
                 self.parse_dataset,
                 errback=self.handle_err, meta={'filepath': filepath}
             )
+        return None
 
     def start_requests(self):
         '''
@@ -115,7 +116,7 @@ class TreasuryBaseSpider(scrapy.Spider):
                     'ddo_code': ddo_code,
                     'query_name': query_name
                 }
-                return self.make_dataset_request(params)
+                yield self.make_dataset_request(params)
 
     def parse_dataset(self, response):  #pylint: disable=no-self-use
         '''
