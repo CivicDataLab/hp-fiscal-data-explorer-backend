@@ -1,3 +1,7 @@
+'''
+Utility functions for parsers.
+'''
+
 import re
 
 

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+Settings for scraper.
+'''
 
 from os import path
 
