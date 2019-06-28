@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Base Spider for treasury crawling.
+'''
+
 import csv
 import os
 from urllib.parse import urlencode
@@ -18,10 +22,19 @@ class TreasuryBaseSpider(scrapy.Spider):
     '''
     allowed_domains = ['himkosh.hp.nic.in']
 
+    query_url = None
+    query_index = None
+
     def __init__(self, *args, **kwargs):
         super(TreasuryBaseSpider, self).__init__(*args, **kwargs)
         if not hasattr(self, 'start') and not hasattr(self, 'end'):
             raise CloseSpider('No date range given!')
+
+        self.start = kwargs.pop('start')
+        self.end = kwargs.pop('end')
+        self.query_id = kwargs.pop('query_id', None)
+        self.query_name = kwargs.pop('query_name', None)
+        self.treasury_id = kwargs.pop('treasury_id', None)
 
     def make_dataset_request(self, params):
         '''
@@ -47,7 +60,7 @@ class TreasuryBaseSpider(scrapy.Spider):
             }
 
             return scrapy.Request(
-                self.query_url.format(urlencode(query_params)), # pylint: disable=no-member
+                self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
                 errback=self.handle_err, meta={'filepath': filepath}
             )
@@ -60,21 +73,17 @@ class TreasuryBaseSpider(scrapy.Spider):
         If they were provided then it'll query specifically for that otherwise it goes to
         the expenditures' home page and collects for all the treasuries.
         '''
-        if (
-                not hasattr(self, 'query_id')
-                and not hasattr(self, 'treasury_id')
-                and not hasattr(self, 'query_name')
-            ):
+        if not self.query_id and not self.treasury_id and not self.query_name:
             yield scrapy.Request(self.start_urls[0], self.parse)
         else:
-            for ddo_code in self.get_ddo_codes(self.treasury_id): #pylint: disable=no-member
+            for ddo_code in self.get_ddo_codes(self.treasury_id):
                 params = {
-                    'start': self.start,  #pylint: disable=no-member
-                    'end': self.end,  #pylint: disable=no-member
-                    'query_id': self.query_id,  #pylint: disable=no-member
-                    'treasury_id': self.treasury_id,  #pylint: disable=no-member
+                    'start': self.start,
+                    'end': self.end,
+                    'query_id': self.query_id,
+                    'treasury_id': self.treasury_id,
                     'ddo_code': ddo_code,
-                    'query_name': self.query_name  #pylint: disable=no-member
+                    'query_name': self.query_name
                 }
                 yield self.make_dataset_request(params)
 
@@ -88,7 +97,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         query_text
         '''
         # collect details of query 10 that gives consolidated data.
-        query_elem = response.xpath('id("ddlQuery")/option')[self.query_index]  # pylint: disable=no-member
+        query_elem = response.xpath('id("ddlQuery")/option')[self.query_index]
 
         # extract parameters for query i.e. query id and its text.
         query_id = query_elem.xpath('./@value').extract_first()
@@ -108,8 +117,8 @@ class TreasuryBaseSpider(scrapy.Spider):
 
             for ddo_code in self.get_ddo_codes(treasury_id):
                 params = {
-                    'start': self.start,  #pylint: disable=no-member
-                    'end': self.end,  #pylint: disable=no-member
+                    'start': self.start,
+                    'end': self.end,
                     'query_id': query_id,
                     'treasury_id': treasury_id,
                     'treasury_name': treasury_name,
@@ -118,7 +127,7 @@ class TreasuryBaseSpider(scrapy.Spider):
                 }
                 yield self.make_dataset_request(params)
 
-    def parse_dataset(self, response):  #pylint: disable=no-self-use
+    def parse_dataset(self, response):
         '''
         Parse each dataset page to collect the data in a csv file.
         output: a csv file named with query_treasury-ddo_year(all lowercase) format.
@@ -173,7 +182,7 @@ class TreasuryBaseSpider(scrapy.Spider):
 
             with open(ddo_file_path) as ddo_file:
                 ddo_code_reader = csv.reader(ddo_file)
-                next(ddo_code_reader)  # pylint: disable=stop-iteration-return
+                next(ddo_code_reader)
 
                 for ddo in ddo_code_reader:
                     ddo_code = ddo[0]

@@ -71,5 +71,3 @@ max-bool-expr=5
 
 
 [MESSAGES CONTROL]
-
-disable=invalid-name,missing-docstring,c-extension-no-member
