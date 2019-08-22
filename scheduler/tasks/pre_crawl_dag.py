@@ -23,10 +23,19 @@ with DAG('pre_treasury_crawl',
          schedule_interval='@once',
         ) as dag:
 
+    CREATE_DIR = BashOperator(
+        task_id='create_datasets_dir',
+        bash_command='cd {}/scraper && if [ ! -d datasets ]; then mkdir datasets; fi'.format(
+            PROJECT_PATH
+        )
+    )
+
     CRAWL_DDO_CODES = BashOperator(
         task_id='crawl_ddo_codes',
         bash_command='cd {}/scraper && scrapy crawl ddo_collector'.format(PROJECT_PATH)
     )
+
+    CREATE_DIR >> CRAWL_DDO_CODES  # pylint: disable=pointless-statement
 
 TRIGGER = TriggerDagRunOperator(
     task_id='trigger_treasury_crawl',
