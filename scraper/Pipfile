@@ -10,6 +10,7 @@ scrapy = "*"
 pylint = "*"
 twisted = "*"
 apache-airflow = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.6"
