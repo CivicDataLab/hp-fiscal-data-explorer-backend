@@ -21,6 +21,7 @@ DEFAULT_ARGS = {
 with DAG('pre_treasury_crawl',
          default_args=DEFAULT_ARGS,
          schedule_interval='@once',
+         catchup=False
         ) as dag:
 
     CREATE_DIR = BashOperator(
@@ -35,10 +36,10 @@ with DAG('pre_treasury_crawl',
         bash_command='cd {}/scraper && scrapy crawl ddo_collector'.format(PROJECT_PATH)
     )
 
-    CREATE_DIR >> CRAWL_DDO_CODES  # pylint: disable=pointless-statement
-
 TRIGGER = TriggerDagRunOperator(
     task_id='trigger_treasury_crawl',
     trigger_dag_id="crawl_treasuries",
     dag=dag,
 )
+
+CREATE_DIR >> CRAWL_DDO_CODES >> TRIGGER  # pylint: disable=pointless-statement
