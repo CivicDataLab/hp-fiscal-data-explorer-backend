@@ -3,7 +3,8 @@ Spider for collecting ddo codes.
 '''
 import csv
 import os
-from urllib.parse import urlencode, parse_qs
+from datetime import datetime as dt
+from urllib.parse import parse_qs, urlencode
 
 import scrapy
 
@@ -49,7 +50,10 @@ class DDOCodeCollector(scrapy.Spider):
         ddo_selector = response.xpath('id("ddlDDOCode")/option')
 
         treasury_code = response.meta.get('treasury')
-        filepath = os.path.join(DATASET_PATH, '{}_ddo_codes.csv'.format(treasury_code))
+        filepath = os.path.join(
+            DATASET_PATH,
+            '{}_ddo_codes_{}.csv'.format(treasury_code, dt.today().strftime('%Y-%m-%d'))
+        )
 
         with open(filepath, 'w') as output_file:
             writer = csv.writer(output_file, delimiter=',')
