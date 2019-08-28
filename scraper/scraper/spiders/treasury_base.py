@@ -188,11 +188,10 @@ class TreasuryBaseSpider(scrapy.Spider):
         if os.path.exists(ddo_file_path):
 
             with open(ddo_file_path) as ddo_file:
-                ddo_code_reader = csv.reader(ddo_file)
-                next(ddo_code_reader)
+                ddo_code_reader = csv.DictReader(ddo_file)
 
                 for ddo in ddo_code_reader:
-                    ddo_code = ddo[0]
+                    ddo_code = ddo['DDO Code']
                     yield ddo_code
         else:
             self.logger.error('No ddo code file exists for treasury: {}'.format(treasury_id))
