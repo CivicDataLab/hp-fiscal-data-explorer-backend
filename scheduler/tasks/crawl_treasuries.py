@@ -8,28 +8,32 @@ from string import Template
 
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
-from airflow.operators.python_operator import ShortCircuitOperator
+from airflow.operators.python_operator import BranchPythonOperator
 
 PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 
 DEFAULT_ARGS = {
     'owner': 'airflow',
-    'start_date': dt.datetime(2019, 8, 21),
+    'start_date': dt.datetime(2019, 8, 1),
     'concurrency': 1,
     'retries': 0
 }
 
-def check_trigger_week(execution_date, **kwargs):
+def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
     '''
-    check if the execution day is 'Tuesday'
+    Branch the tasks based on weekday.
     '''
-    return execution_date.weekday() == 2
+    # check if the execution day is 'Saturday'
+    if execution_date.weekday() == 5:
+        return ['crawl_ddo_codes', 'crawl_expenditure', 'crawl_receipts']
+
+    return ['crawl_expenditure', 'crawl_receipts']
 
 
 with DAG('crawl_treasuries',
          default_args=DEFAULT_ARGS,
          schedule_interval='00 10 * * *',
-         # catchup=False
+         catchup=False
         ) as dag:
 
     CREATE_DIR = BashOperator(
@@ -50,7 +54,8 @@ with DAG('crawl_treasuries',
 
     CRAWL_EXPENDITURE = BashOperator(
         task_id='crawl_expenditure',
-        bash_command=EXP_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH)
+        bash_command=EXP_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
+        trigger_rule='none_failed'
     )
 
     REC_CRAWL_COMMAND = Template("""
@@ -59,17 +64,18 @@ with DAG('crawl_treasuries',
 
     CRAWL_RECEIPTS = BashOperator(
         task_id='crawl_receipts',
-        bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH)
+        bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
+        trigger_rule='none_failed'
     )
 
-CHECK_TRIGGER_WEEKLY = ShortCircuitOperator(
-    task_id='check_trigger_weekly',
-    python_callable=check_trigger_week,
+BRANCH_OP = BranchPythonOperator(
+    task_id='branch_task',
     provide_context=True,
+    python_callable=branch_tasks,
     dag=dag
 )
 
-CREATE_DIR.set_downstream(CRAWL_DDO_CODES)
-CHECK_TRIGGER_WEEKLY.set_downstream(CRAWL_DDO_CODES)
+CREATE_DIR.set_downstream(BRANCH_OP)
+BRANCH_OP.set_downstream([CRAWL_DDO_CODES, CRAWL_EXPENDITURE, CRAWL_RECEIPTS])
 CRAWL_DDO_CODES.set_downstream(CRAWL_EXPENDITURE)
 CRAWL_DDO_CODES.set_downstream(CRAWL_RECEIPTS)
