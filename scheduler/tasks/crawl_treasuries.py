@@ -4,6 +4,7 @@ Crawler DAG definition.
 
 import datetime as dt
 from os import path
+from string import Template
 
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
@@ -36,33 +37,20 @@ with DAG('pre_treasury_crawl',
         bash_command='cd {}/scraper && scrapy crawl ddo_collector'.format(PROJECT_PATH)
     )
 
-# TRIGGER = TriggerDagRunOperator(
-#     task_id='trigger_treasury_crawl',
-#     trigger_dag_id="crawl_treasuries",
-#     dag=dag,
-# )
-
-with DAG('crawl_treasuries',
-         default_args={
-             'owner': 'airflow',
-             'start_date': PRE_CRAWL_DT + dt.timedelta(minutes=5),
-             'concurrency': 1,
-             'retries': 0
-         },
-         schedule_interval='*/5 * * * *',
-         catchup=False
-        ) as dag:
+    EXP_CRAWL_COMMAND = Template("""
+        cd $project_path/scraper && scrapy crawl treasury_expenditures -a start={{ ds_nodash }} -a end={{ ds_nodash }}
+    """)
 
     CRAWL_EXPENDITURE = BashOperator(
         task_id='crawl_expenditure',
-        bash_command='''
-            cd {}/scraper && scrapy crawl treasury_expenditures -a start=20190801 -a end=20190831
-        '''.format(PROJECT_PATH)
+        bash_command=EXP_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH)
     )
+
+    REC_CRAWL_COMMAND = Template("""
+        cd $project_path/scraper && scrapy crawl treasury_receipts -a start={{ ds_nodash }} -a end={{ ds_nodash }}
+    """)
 
     CRAWL_RECEIPTS = BashOperator(
         task_id='crawl_receipts',
-        bash_command='''
-            cd {}/scraper && scrapy crawl treasury_receipts -a start=20190801 -a end=20190831
-        '''.format(PROJECT_PATH)
+        bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH)
     )
