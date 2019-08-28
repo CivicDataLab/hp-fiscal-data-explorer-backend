@@ -8,21 +8,28 @@ from string import Template
 
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
-# from airflow.operators.dagrun_operator import TriggerDagRunOperator
+from airflow.operators.python_operator import ShortCircuitOperator
 
 PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 
-PRE_CRAWL_DT = dt.datetime(2019, 8, 23, 8, 45, 00)
+DEFAULT_ARGS = {
+    'owner': 'airflow',
+    'start_date': dt.datetime(2019, 8, 21),
+    'concurrency': 1,
+    'retries': 0
+}
 
-with DAG('pre_treasury_crawl',
-         default_args={
-             'owner': 'airflow',
-             'start_date': PRE_CRAWL_DT,
-             'concurrency': 1,
-             'retries': 0
-         },
-         schedule_interval='@once',
-         catchup=False
+def check_trigger_week(execution_date, **kwargs):
+    '''
+    check if the execution day is 'Tuesday'
+    '''
+    return execution_date.weekday() == 2
+
+
+with DAG('crawl_treasuries',
+         default_args=DEFAULT_ARGS,
+         schedule_interval='00 10 * * *',
+         # catchup=False
         ) as dag:
 
     CREATE_DIR = BashOperator(
@@ -54,3 +61,15 @@ with DAG('pre_treasury_crawl',
         task_id='crawl_receipts',
         bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH)
     )
+
+CHECK_TRIGGER_WEEKLY = ShortCircuitOperator(
+    task_id='check_trigger_weekly',
+    python_callable=check_trigger_week,
+    provide_context=True,
+    dag=dag
+)
+
+CREATE_DIR.set_downstream(CRAWL_DDO_CODES)
+CHECK_TRIGGER_WEEKLY.set_downstream(CRAWL_DDO_CODES)
+CRAWL_DDO_CODES.set_downstream(CRAWL_EXPENDITURE)
+CRAWL_DDO_CODES.set_downstream(CRAWL_RECEIPTS)
