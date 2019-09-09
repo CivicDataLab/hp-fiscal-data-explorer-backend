@@ -37,23 +37,8 @@ class BudgetbasespiderSpider(scrapy.Spider):
             pdf_names = '../../datasets/budget/' + response.meta['pdf_name'] + '.pdf'
             file = open(pdf_names, 'wb')
             file.write(response.body)
-            file.close()
         else:
             pdf_names = '../../datasets/receipts/' + response.meta['pdf_name_receipts'] + '.pdf'
             file = open(pdf_names, 'wb')
             file.write(response.body)
-            file.close()
-
-
- #   def save_pdf_receipts(self, response):
-  #      pdf_names = '../../datasets/receipts/' + response.meta['pdf_name_receipts'] + '.pdf'
-   #     file = open(pdf_names, 'wb')
-    #    file.write(response.body)
-     #   file.close()
-    
-    
- 
-
-       
-       
-       
+            file.close()  
