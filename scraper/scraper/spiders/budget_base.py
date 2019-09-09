@@ -117,7 +117,6 @@ class BudgetBaseSpider(scrapy.Spider):
         '''
         # header row for the file.
         heads = response.xpath('//table//tr[@class="popupheadingeKosh"]//td//text()').extract()
-        pdb.set_trace()
         # all other rows
         data_rows = response.xpath('//table//tr[contains(@class, "pope")]')
 
