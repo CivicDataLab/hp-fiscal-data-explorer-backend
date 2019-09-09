@@ -23,8 +23,8 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
     '''
     Branch the tasks based on weekday.
     '''
-    # check if the execution day is 'Saturday'
-    if execution_date.weekday() == 5:
+    # check if the execution day is 'Friday'
+    if execution_date.weekday() == 3:
         return ['crawl_ddo_codes', 'crawl_expenditure', 'crawl_receipts']
 
     return ['crawl_expenditure', 'crawl_receipts']
@@ -32,7 +32,7 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
 
 with DAG('crawl_treasuries',
          default_args=DEFAULT_ARGS,
-         schedule_interval='00 10 * * *',
+         schedule_interval='30 4 * * *',
          catchup=False
         ) as dag:
 
