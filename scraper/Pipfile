@@ -9,6 +9,7 @@ verify_ssl = true
 scrapy = "*"
 pylint = "*"
 twisted = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"
