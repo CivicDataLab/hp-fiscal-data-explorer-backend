@@ -75,18 +75,20 @@ class TreasuryBaseSpider(scrapy.Spider):
         # check if a file with a particular dataset name exist, if it does then
         # also check if it's empty or not, if it's empty we request it again.
         if not os.path.exists(filepath) or not os.stat(filepath).st_size:
+
+            treasury_id = params['treasury_id']
             query_params = {
                 'from_date': params['start'],  # format: yyyymmdd
                 'To_date': params['end'],      # format: yyyymmdd
                 'ddlquery': params['query_id'],
-                'HODCode': '{}-{}'.format(params['treasury_id'], params['ddo_code']),
+                'HODCode': '{}-{}'.format(treasury_id, params['ddo_code']),
                 'Str': params['query_name']
             }
 
             return scrapy.Request(
                 self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
-                errback=self.handle_err, meta={'filepath': filepath}
+                errback=self.handle_err, meta={'filepath': filepath, 'treasury_id': treasury_id}
             )
         return None
 
@@ -157,6 +159,8 @@ class TreasuryBaseSpider(scrapy.Spider):
         Parse each dataset page to collect the data in a csv file.
         output: a csv file named with query_treasury-ddo_year(all lowercase) format.
         '''
+        treasury = response.meta.get('treasury_id')
+
         # header row for the file.
         heads = response.xpath('//table//tr[@class="popupheadingeKosh"]//td//text()').extract()
 
