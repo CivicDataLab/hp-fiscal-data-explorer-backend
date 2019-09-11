@@ -57,6 +57,8 @@ class TreasuryBaseSpider(scrapy.Spider):
         self.query_id = kwargs.pop('query_id', None)
         self.query_name = kwargs.pop('query_name', None)
         self.treasury_id = kwargs.pop('treasury_id', None)
+        self.treasury_name = kwargs.pop('treasury_name', None)
+        self.ddo_code = kwargs.pop('ddo_code', None)
 
     def make_dataset_request(self, params):
         '''
@@ -95,19 +97,20 @@ class TreasuryBaseSpider(scrapy.Spider):
         If they were provided then it'll query specifically for that otherwise it goes to
         the expenditures' home page and collects for all the treasuries.
         '''
-        if not self.query_id and not self.treasury_id and not self.query_name:
+        single_req_attrs = ['query_id', 'query_name', 'treasury_id', 'treasury_name', 'ddo_code']
+        if not all(attr in self.__dict__.keys() for attr in single_req_attrs):
             yield scrapy.Request(self.start_urls[0], self.parse)
         else:
-            for ddo_code in self.get_ddo_codes(self.treasury_id):
-                params = {
-                    'start': self.start,
-                    'end': self.end,
-                    'query_id': self.query_id,
-                    'treasury_id': self.treasury_id,
-                    'ddo_code': ddo_code,
-                    'query_name': self.query_name
-                }
-                yield self.make_dataset_request(params)
+            params = {
+                'start': self.start,
+                'end': self.end,
+                'query_id': self.query_id,
+                'query_name': self.query_name,
+                'treasury_id': self.treasury_id,
+                'treasury_name': self.treasury_name,
+                'ddo_code': self.ddo_code
+            }
+            yield self.make_dataset_request(params)
 
     def parse(self, response):
         '''
