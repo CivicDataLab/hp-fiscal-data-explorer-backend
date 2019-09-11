@@ -15,6 +15,21 @@ from scraper.settings import DATASET_PATH
 from scraper.utils import parsing_utils
 
 
+class CustomTreasuryMiddleware(object):
+    '''
+    Treasury Middleware
+    '''
+    def process_response(self, request, response, spider):
+        '''
+        Adds stats from response for dataset.
+        '''
+        treasury = request.meta.get('treasury_id')
+        # treasury = parse_qs(urlparse(request.url)[4])['HODCode'][0].split('-')[0]
+        if 'There is no record with given values' in response.text:
+            spider.crawler.stats.inc_value('{}/no_dataset_count'.format(treasury))
+
+        return response
+
 class TreasuryBaseSpider(scrapy.Spider):
     '''
     Base spider for HP treasury. It has methods for making dataset requests
@@ -24,6 +39,13 @@ class TreasuryBaseSpider(scrapy.Spider):
 
     query_url = None
     query_index = None
+
+    @classmethod
+    def update_settings(cls, settings):
+        super(TreasuryBaseSpider, cls).update_settings(settings)
+        middleware_name = CustomTreasuryMiddleware.__module__
+        middleware_name += '.' + CustomTreasuryMiddleware.__name__
+        settings['DOWNLOADER_MIDDLEWARES'][middleware_name] = 999
 
     def __init__(self, *args, **kwargs):
         super(TreasuryBaseSpider, self).__init__(*args, **kwargs)
