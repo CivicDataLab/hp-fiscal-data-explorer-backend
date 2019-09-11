@@ -24,9 +24,8 @@ class CustomTreasuryMiddleware(object):
         Adds stats from response for dataset.
         '''
         treasury = request.meta.get('treasury_id')
-        # treasury = parse_qs(urlparse(request.url)[4])['HODCode'][0].split('-')[0]
         if 'There is no record with given values' in response.text:
-            spider.crawler.stats.inc_value('{}/no_dataset_count'.format(treasury))
+            spider.crawler.stats.inc_value('{}/dataset_not_avail_count'.format(treasury))
 
         return response
 
@@ -142,6 +141,9 @@ class TreasuryBaseSpider(scrapy.Spider):
             treasury_name = treasury.xpath('.//text()').extract_first()
             treasury_name = parsing_utils.clean_text(treasury_name)
 
+            self.crawler.stats.set_value('{}/dataset_not_avail_count'.format(treasury_id), 0)
+            self.crawler.stats.set_value('{}/dataset_count'.format(treasury_id), 0)
+
             for ddo_code in self.get_ddo_codes(treasury_id):
                 params = {
                     'start': self.start,
@@ -169,6 +171,8 @@ class TreasuryBaseSpider(scrapy.Spider):
 
         if not data_rows:
             return
+
+        self.crawler.stats.inc_value('{}/dataset_count'.format(treasury))
 
         # prepare file name and its path to write the file.
         filepath = response.meta.get('filepath')
