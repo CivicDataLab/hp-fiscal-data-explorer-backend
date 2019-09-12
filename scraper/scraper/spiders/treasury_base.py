@@ -77,8 +77,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         If they were provided then it'll query specifically for that otherwise it goes to
         the expenditures' home page and collects for all the treasuries.
         '''
-        single_req_attrs = ['query_id', 'query_name', 'treasury_id', 'treasury_name', 'ddo_code']
-        if not all(attr in self.__dict__.keys() for attr in single_req_attrs):
+        if not all(self.__dict__.values()):
             yield scrapy.Request(self.start_urls[0], self.parse)
         else:
             params = {
@@ -151,6 +150,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         if not data_rows:
             if 'There is no record with given values' in response.text:
                 self.crawler.stats.inc_value('{}/dataset_not_avail_count'.format(treasury))
+                self.logger.warning('No dataset found for {}'.format(response.url))
             return
 
         self.crawler.stats.inc_value('{}/dataset_count'.format(treasury))
