@@ -14,6 +14,8 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from scraper.settings import DATASET_PATH
 from scraper.utils import parsing_utils
 
+DATASET_PAGE_ERROR_MSG = 'There is no record with given values'
+
 
 class TreasuryBaseSpider(scrapy.Spider):
     '''
@@ -148,7 +150,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         data_rows = response.xpath('//table//tr[contains(@class, "pope")]')
 
         if not data_rows:
-            if 'There is no record with given values' in response.text:
+            if DATASET_PAGE_ERROR_MSG in response.text:
                 self.crawler.stats.inc_value('{}/dataset_not_avail_count'.format(treasury))
                 self.logger.warning('No dataset found for {}'.format(response.url))
             return
