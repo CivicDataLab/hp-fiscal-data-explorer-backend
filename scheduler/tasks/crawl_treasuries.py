@@ -16,6 +16,9 @@ DEFAULT_ARGS = {
     'owner': 'airflow',
     'start_date': dt.today().replace(day=1),
     'concurrency': 1,
+    # since scrapy crawlers already try 3 times at their end if there's network glitch or something
+    # if there's some other issue then we should not anyway overwhelm the site by continuously
+    # hitting.
     'retries': 0
 }
 
@@ -32,7 +35,7 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
 
 with DAG('crawl_treasuries',
          default_args=DEFAULT_ARGS,
-         schedule_interval='30 4 * * *',
+         schedule_interval='30 4 * * *',  # the timezone is UTC here.
          catchup=False
         ) as dag:
 
@@ -48,6 +51,7 @@ with DAG('crawl_treasuries',
         bash_command='cd {}/scraper && scrapy crawl ddo_collector'.format(PROJECT_PATH)
     )
 
+    # Ref: https://airflow.apache.org/macros.html for the jinja variables used below.
     EXP_CRAWL_COMMAND = Template("""
         cd $project_path/scraper && scrapy crawl treasury_expenditures -a start={{ ds_nodash }} -a end={{ ds_nodash }}
     """)

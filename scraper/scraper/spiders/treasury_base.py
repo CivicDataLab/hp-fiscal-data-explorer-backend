@@ -132,6 +132,7 @@ class TreasuryBaseSpider(scrapy.Spider):
                 }
                 yield self.make_dataset_request(params)
 
+            # add a sleep of 5 seconds after each treasury crawled
             time.sleep(5)
 
     def parse_dataset(self, response):
