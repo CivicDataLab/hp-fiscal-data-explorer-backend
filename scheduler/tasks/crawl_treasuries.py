@@ -14,7 +14,7 @@ PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 
 DEFAULT_ARGS = {
     'owner': 'airflow',
-    'start_date': dt.datetime(2019, 8, 1),
+    'start_date': dt.today().replace(day=1),
     'concurrency': 1,
     'retries': 0
 }
@@ -52,7 +52,7 @@ with DAG('crawl_treasuries',
         cd $project_path/scraper && scrapy crawl treasury_expenditures -a start={{ ds_nodash }} -a end={{ ds_nodash }}
     """)
 
-    CRAWL_EXPENDITURE = BashOperator(
+    EXP_CRAWL_TASK = BashOperator(
         task_id='crawl_expenditure',
         bash_command=EXP_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
         trigger_rule='none_failed'
@@ -62,7 +62,7 @@ with DAG('crawl_treasuries',
         cd $project_path/scraper && scrapy crawl treasury_receipts -a start={{ ds_nodash }} -a end={{ ds_nodash }}
     """)
 
-    CRAWL_RECEIPTS = BashOperator(
+    REC_CRAWL_TASK = BashOperator(
         task_id='crawl_receipts',
         bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
         trigger_rule='none_failed'
@@ -76,6 +76,6 @@ BRANCH_OP = BranchPythonOperator(
 )
 
 CREATE_DIR.set_downstream(BRANCH_OP)
-BRANCH_OP.set_downstream([CRAWL_DDO_CODES, CRAWL_EXPENDITURE, CRAWL_RECEIPTS])
-CRAWL_DDO_CODES.set_downstream(CRAWL_EXPENDITURE)
-CRAWL_DDO_CODES.set_downstream(CRAWL_RECEIPTS)
+BRANCH_OP.set_downstream([CRAWL_DDO_CODES, EXP_CRAWL_TASK, REC_CRAWL_TASK])
+CRAWL_DDO_CODES.set_downstream(EXP_CRAWL_TASK)
+CRAWL_DDO_CODES.set_downstream(REC_CRAWL_TASK)
