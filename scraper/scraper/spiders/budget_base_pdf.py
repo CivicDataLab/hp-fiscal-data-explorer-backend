@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import scrapy
 import re
-import pdb
+import scrapy
+
 
 class BudgetbasespiderSpider(scrapy.Spider):
     name = 'budget_crawler'
@@ -14,14 +14,14 @@ class BudgetbasespiderSpider(scrapy.Spider):
         filename_receipts = response.css('#tab-content ul li:nth-of-type(8) p.pa a::text').extract()
 
 
-        for i in range(len(result)):
-            pdf_url = re.findall(".*\('(.*)'\)", result[i])
+        for i, filename in enumerate(result):
+            pdf_url = re.findall(r".*\('(.*)'\)", result[i])
             pdf_name = filename[i]
             type_budget = 'expenditure'
             print(pdf_name, pdf_url)
             yield response.follow(pdf_url[0], self.save_pdf, meta={'pdf_name': pdf_name, 'type_budget': type_budget})  # pylint: disable=line-too-long
-        for i in range(len(result_receipts)):
-            pdf_url_receipts = re.findall(".*\('(.*)'\)", result_receipts[i])
+        for i,receipts_name in enumerate(result_receipts):
+            pdf_url_receipts = re.findall(r".*\('(.*)'\)", result_receipts[i])
             pdf_name_receipts = filename_receipts[i]
             type_budget = 'receipts'
             yield response.follow(pdf_url_receipts[0], self.save_pdf, meta={'pdf_name_receipts': pdf_name_receipts, 'type_budget':type_budget})  # pylint: disable=line-too-long
@@ -35,4 +35,3 @@ class BudgetbasespiderSpider(scrapy.Spider):
             file = open(pdf_names, 'wb')
             file.write(response.body)
             file.close()
-            
