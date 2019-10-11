@@ -75,7 +75,6 @@ class BudgetBaseSpider(scrapy.Spider):
             'hod_name': self.hod_name,
             'unit': self.unit
             }
-            pdb.set_trace()
             return self.make_dataset_request(params)
 
     def parse(self, response):
