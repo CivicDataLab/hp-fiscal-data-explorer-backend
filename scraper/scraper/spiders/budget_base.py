@@ -17,11 +17,18 @@ class BudgetBaseSpider(scrapy.Spider):
     for a given HOD code with a given query with given date.
     '''
     allowed_domains = ['himkosh.hp.nic.in']
+    query_url = None
 
     def __init__(self, *args, **kwargs):
         super(BudgetBaseSpider, self).__init__(*args, **kwargs)
         if not hasattr(self, 'date'):
             raise CloseSpider('No date given!')
+        
+        self.date = kwargs.pop('date')
+        self.query_id = kwargs.pop('query_id', None)
+        self.query_name = kwargs.pop('query_name', None)
+        self.hod_name = kwargs.pop('hod_name', None)
+        self.unit = kwargs.pop('unit', None)
 
     def make_dataset_request(self, params):
         '''
@@ -46,7 +53,7 @@ class BudgetBaseSpider(scrapy.Spider):
             }
 
             yield scrapy.Request(
-                self.query_url.format(urlencode(query_params)), # pylint: disable=no-member
+                self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
                 errback=self.handle_err, meta={'filepath': filepath}
             )
@@ -58,21 +65,17 @@ class BudgetBaseSpider(scrapy.Spider):
         If they were provided then it'll query specifically for that otherwise it goes to
         the expenditures' home page and collects for all the treasuries.
         '''
-        if (
-                not hasattr(self, 'query_id')
-                and not hasattr(self, 'query_name')
-                and not hasattr(self, 'hod_code')
-            ):
+        if not all(self.__dict__.values()): 
             yield scrapy.Request(self.start_urls[0], self.parse)
         else:
-            for ddo_code in self.get_ddo_codes(self.treasury_id): #pylint: disable=no-member
-                params = {
-                    'date': self.date,  #pylint: disable=no-member
-                    'query_id': self.query_id,  #pylint: disable=no-member
-                    'query_name': self.query_name,  #pylint: disable=no-member
-                    'hod_code': self.hod_code
-                }
-                yield self.make_dataset_request(params)
+            params = {
+            'date': self.date,
+            'query_id': self.query_id,
+            'query_name': self.query_name,
+            'hod_name': self.hod_name,
+            'unit': self.unit
+            }
+            return self.make_dataset_request(params)
 
     def parse(self, response):
         '''
@@ -84,7 +87,7 @@ class BudgetBaseSpider(scrapy.Spider):
         query_text
         '''
         # collect details of query 9 that gives consolidated data.
-        query_elem = response.xpath('id("ddlQuery")/option')[self.query_index]  # pylint: disable=no-member
+        query_elem = response.xpath('id("ddlQuery")/option')[self.query_index]
 
         # extract parameters for query i.e. query id and its text.
         query_id = query_elem.xpath('./@value').extract_first()
@@ -102,7 +105,7 @@ class BudgetBaseSpider(scrapy.Spider):
         hod_name = parsing_utils.clean_text(hod_name)
 
         params = {
-            'date': self.date,  #pylint: disable=no-member
+            'date': self.date,
             'query_id': query_id,
             'query_name': query_name,
             'hod_name': hod_name,
@@ -110,7 +113,7 @@ class BudgetBaseSpider(scrapy.Spider):
             }
         return self.make_dataset_request(params)
 
-    def parse_dataset(self, response):  #pylint: disable=no-self-use
+    def parse_dataset(self, response):
         '''
         Parse each dataset page to collect the data in a csv file.
         output: a csv file named with budget_expenditures_date format.
