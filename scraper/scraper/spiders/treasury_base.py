@@ -15,6 +15,8 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from scraper.settings import DATASET_PATH
 from scraper.utils import parsing_utils
 
+DATASET_PAGE_ERROR_MSG = 'There is no record with given values'
+
 
 class TreasuryBaseSpider(scrapy.Spider):
     '''
@@ -36,6 +38,8 @@ class TreasuryBaseSpider(scrapy.Spider):
         self.query_id = kwargs.pop('query_id', None)
         self.query_name = kwargs.pop('query_name', None)
         self.treasury_id = kwargs.pop('treasury_id', None)
+        self.treasury_name = kwargs.pop('treasury_name', None)
+        self.ddo_code = kwargs.pop('ddo_code', None)
 
     def make_dataset_request(self, params):
         '''
@@ -52,18 +56,20 @@ class TreasuryBaseSpider(scrapy.Spider):
         # check if a file with a particular dataset name exist, if it does then
         # also check if it's empty or not, if it's empty we request it again.
         if not os.path.exists(filepath) or not os.stat(filepath).st_size:
+
+            treasury_id = params['treasury_id']
             query_params = {
                 'from_date': params['start'],  # format: yyyymmdd
                 'To_date': params['end'],      # format: yyyymmdd
                 'ddlquery': params['query_id'],
-                'HODCode': '{}-{}'.format(params['treasury_id'], params['ddo_code']),
+                'HODCode': '{}-{}'.format(treasury_id, params['ddo_code']),
                 'Str': params['query_name']
             }
 
             return scrapy.Request(
                 self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
-                errback=self.handle_err, meta={'filepath': filepath}
+                errback=self.handle_err, meta={'filepath': filepath, 'treasury_id': treasury_id}
             )
         return None
 
@@ -74,19 +80,19 @@ class TreasuryBaseSpider(scrapy.Spider):
         If they were provided then it'll query specifically for that otherwise it goes to
         the expenditures' home page and collects for all the treasuries.
         '''
-        if not self.query_id and not self.treasury_id and not self.query_name:
+        if not all(self.__dict__.values()):
             yield scrapy.Request(self.start_urls[0], self.parse)
         else:
-            for ddo_code in self.get_ddo_codes(self.treasury_id):
-                params = {
-                    'start': self.start,
-                    'end': self.end,
-                    'query_id': self.query_id,
-                    'treasury_id': self.treasury_id,
-                    'ddo_code': ddo_code,
-                    'query_name': self.query_name
-                }
-                yield self.make_dataset_request(params)
+            params = {
+                'start': self.start,
+                'end': self.end,
+                'query_id': self.query_id,
+                'query_name': self.query_name,
+                'treasury_id': self.treasury_id,
+                'treasury_name': self.treasury_name,
+                'ddo_code': self.ddo_code
+            }
+            yield self.make_dataset_request(params)
 
     def parse(self, response):
         '''
@@ -116,6 +122,9 @@ class TreasuryBaseSpider(scrapy.Spider):
             treasury_name = treasury.xpath('.//text()').extract_first()
             treasury_name = parsing_utils.clean_text(treasury_name)
 
+            self.crawler.stats.set_value('{}/dataset_not_avail_count'.format(treasury_id), 0)
+            self.crawler.stats.set_value('{}/dataset_count'.format(treasury_id), 0)
+
             for ddo_code in self.get_ddo_codes(treasury_id):
 
                 # add a sleep of 1 second before each ddo crawled
@@ -140,6 +149,8 @@ class TreasuryBaseSpider(scrapy.Spider):
         Parse each dataset page to collect the data in a csv file.
         output: a csv file named with query_treasury-ddo_year(all lowercase) format.
         '''
+        treasury = response.meta.get('treasury_id')
+
         # header row for the file.
         heads = response.xpath('//table//tr[@class="popupheadingeKosh"]//td//text()').extract()
 
@@ -147,7 +158,12 @@ class TreasuryBaseSpider(scrapy.Spider):
         data_rows = response.xpath('//table//tr[contains(@class, "pope")]')
 
         if not data_rows:
+            if DATASET_PAGE_ERROR_MSG in response.text:
+                self.crawler.stats.inc_value('{}/dataset_not_avail_count'.format(treasury))
+                self.logger.warning('No dataset found for {}'.format(response.url))
             return
+
+        self.crawler.stats.inc_value('{}/dataset_count'.format(treasury))
 
         # prepare file name and its path to write the file.
         filepath = response.meta.get('filepath')
