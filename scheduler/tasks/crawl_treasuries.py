@@ -2,7 +2,7 @@
 Crawler DAG definition.
 '''
 
-import datetime as dt
+from datetime import datetime
 from os import path
 from string import Template
 
@@ -14,7 +14,7 @@ PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
 
 DEFAULT_ARGS = {
     'owner': 'airflow',
-    'start_date': dt.today().replace(day=1),
+    'start_date': datetime.today().replace(day=1),
     'concurrency': 1,
     # since scrapy crawlers already try 3 times at their end if there's network glitch or something
     # if there's some other issue then we should not anyway overwhelm the site by continuously
