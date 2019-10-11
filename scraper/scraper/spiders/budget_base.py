@@ -18,6 +18,7 @@ class BudgetBaseSpider(scrapy.Spider):
     '''
     allowed_domains = ['himkosh.hp.nic.in']
     query_url = None
+    unit = None
 
     def __init__(self, *args, **kwargs):
         super(BudgetBaseSpider, self).__init__(*args, **kwargs)
@@ -28,8 +29,7 @@ class BudgetBaseSpider(scrapy.Spider):
         self.query_id = kwargs.pop('query_id', None)
         self.query_name = kwargs.pop('query_name', None)
         self.hod_name = kwargs.pop('hod_name', None)
-        self.unit = kwargs.pop('unit', None)
-
+        
     def make_dataset_request(self, params):
         '''
         Construct and yield a scrapy request for a dataset.
@@ -75,6 +75,7 @@ class BudgetBaseSpider(scrapy.Spider):
             'hod_name': self.hod_name,
             'unit': self.unit
             }
+            pdb.set_trace()
             return self.make_dataset_request(params)
 
     def parse(self, response):
