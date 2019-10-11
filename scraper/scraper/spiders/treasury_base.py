@@ -5,6 +5,7 @@ Base Spider for treasury crawling.
 
 import csv
 import os
+import time
 from urllib.parse import urlencode
 
 import scrapy
@@ -116,6 +117,10 @@ class TreasuryBaseSpider(scrapy.Spider):
             treasury_name = parsing_utils.clean_text(treasury_name)
 
             for ddo_code in self.get_ddo_codes(treasury_id):
+
+                # add a sleep of 1 second before each ddo crawled
+                time.sleep(1)
+
                 params = {
                     'start': self.start,
                     'end': self.end,
@@ -126,6 +131,9 @@ class TreasuryBaseSpider(scrapy.Spider):
                     'query_name': query_name
                 }
                 yield self.make_dataset_request(params)
+
+            # add a sleep of 5 seconds after each treasury crawled
+            time.sleep(5)
 
     def parse_dataset(self, response):
         '''
@@ -181,11 +189,10 @@ class TreasuryBaseSpider(scrapy.Spider):
         if os.path.exists(ddo_file_path):
 
             with open(ddo_file_path) as ddo_file:
-                ddo_code_reader = csv.reader(ddo_file)
-                next(ddo_code_reader)
+                ddo_code_reader = csv.DictReader(ddo_file)
 
                 for ddo in ddo_code_reader:
-                    ddo_code = ddo[0]
+                    ddo_code = ddo['DDO Code']
                     yield ddo_code
         else:
             self.logger.error('No ddo code file exists for treasury: {}'.format(treasury_id))

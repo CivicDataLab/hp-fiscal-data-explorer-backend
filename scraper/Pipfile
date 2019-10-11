@@ -9,6 +9,8 @@ verify_ssl = true
 scrapy = "*"
 pylint = "*"
 twisted = "*"
+psycopg2 = "*"
+apache-airflow = {extras = ["crypto", "password"],version = "*"}
 
 [requires]
 python_version = "3.6"
