@@ -50,8 +50,13 @@ class DDOCodeCollector(scrapy.Spider):
         ddo_selector = response.xpath('id("ddlDDOCode")/option')
 
         treasury_code = response.meta.get('treasury')
+
+        dir_path = os.path.join(DATASET_PATH, '{}_ddo_codes'.format(treasury_code))
+        if not os.path.exists(dir_path):
+            os.mkdir(dir_path)
+
         filepath = os.path.join(
-            DATASET_PATH,
+            dir_path,
             '{}_ddo_codes_{}.csv'.format(treasury_code, dt.today().strftime('%Y-%m-%d'))
         )
 

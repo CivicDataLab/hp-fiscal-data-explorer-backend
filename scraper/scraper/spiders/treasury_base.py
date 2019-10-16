@@ -4,6 +4,7 @@ Base Spider for treasury crawling.
 '''
 
 import csv
+import glob
 import os
 import time
 from urllib.parse import urlencode
@@ -200,15 +201,21 @@ class TreasuryBaseSpider(scrapy.Spider):
         '''
         collects and return ddo code for a treasury.
         '''
-        ddo_file_path = os.path.join(DATASET_PATH, '{}_ddo_codes.csv'.format(treasury_id))
+        try:
+            ddo_dir_path = os.path.join(DATASET_PATH, '{}_ddo_codes'.format(treasury_id))
 
-        if os.path.exists(ddo_file_path):
-
+            # NOTE: Ref-https://stackoverflow.com/a/44031522/3860168
+            ddo_files = glob.glob('{}/*.csv'.format(ddo_dir_path))
+            sorted_ddo_file_names = sorted(ddo_files, key=os.path.getmtime)
+            ddo_file_path = sorted_ddo_file_names[-1]
+        except (FileNotFoundError, IndexError):
+            self.logger.error('No ddo code file exists for treasury: {}'.format(treasury_id))
+        except Exception as err:
+            self.logger.error(err)
+        else:
             with open(ddo_file_path) as ddo_file:
                 ddo_code_reader = csv.DictReader(ddo_file)
 
                 for ddo in ddo_code_reader:
                     ddo_code = ddo['DDO Code']
                     yield ddo_code
-        else:
-            self.logger.error('No ddo code file exists for treasury: {}'.format(treasury_id))
