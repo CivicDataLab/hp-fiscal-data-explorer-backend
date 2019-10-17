@@ -11,10 +11,10 @@ class BudgetExpendituresSpider(budget_base.ExpenditureBaseSpider):
     '''
     name = 'budget_expenditures'
 
-    start_urls = ['http://himkosh.hp.nic.in/treasuryportal/eKosh/ekoshhodAllocationquery.asp']
+    start_urls = ['https://himkosh.hp.nic.in/treasuryportal/eKosh/ekoshhodAllocationquery.asp']
 
     # dataset is collected from here.
-    query_url = 'http://himkosh.hp.nic.in/treasuryportal/eKosh/eKoshHODAllocationPopUp.asp?{}'
+    query_url = 'https://himkosh.hp.nic.in/treasuryportal/eKosh/eKoshHODAllocationPopUp.asp?{}'
 
     query_index = 9
 
