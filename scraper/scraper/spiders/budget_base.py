@@ -1,5 +1,5 @@
 '''
-Budget Base Spider
+Base Spider for budget crawling.
 '''
 # -*- coding: utf-8 -*-
 
@@ -84,7 +84,7 @@ class ExpenditureBaseSpider(BudgetBaseSpider):
                 'Unit' : params['unit']
             }
 
-            yield scrapy.Request(
+            return scrapy.Request(
                 self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
                 errback=self.handle_err,
