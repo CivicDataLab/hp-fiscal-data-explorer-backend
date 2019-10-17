@@ -258,7 +258,7 @@ class ReceiptBaseSpider(BudgetBaseSpider):
         if not os.path.exists(filepath) or not os.stat(filepath).st_size:
             self.dataset_file = open(filepath, 'w')
 
-            heads = ['Maj-Smj-Min-Smn [Sub Minor Head]', 'date','Total Receipt']
+            heads = ['Maj-Smj-Min-Smn [Sub Minor Head]', 'date', 'Total Receipt']
             csv_writer = csv.writer(self.dataset_file, delimiter=',')
             csv_writer.writerow(heads)
 
