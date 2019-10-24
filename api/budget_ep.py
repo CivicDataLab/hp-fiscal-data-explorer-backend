@@ -9,6 +9,8 @@ import falcon
 from api.db import CONNECTION
 
 
+#NOTE: purposefully ignoring no-member errors
+# Ref https://github.com/falconry/falcon/issues/1553
 def validate_date(req, resp, resource, params):
     '''
     check for required parameters in query string and validate date format.
