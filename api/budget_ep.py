@@ -5,9 +5,8 @@ import json
 from datetime import datetime
 
 import falcon
-from api.db import connection
 
-def validate_date(req, resp, resource, params):
+from api.db import CONNECTION
 
 
 def validate_date(req, resp, resource, params):
