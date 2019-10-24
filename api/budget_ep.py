@@ -32,29 +32,29 @@ class DetailExpenditure():
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
 
-        query_string = "select * from himachal_budget_allocation WHERE date BETWEEN '{}' and '{}'"
+        query_string = "select * from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}'"
         query = connection.execute(query_string.format(start, end))
         data_rows = query.fetchall()
 
         response_data = {'records': []}
         for row in data_rows:
             record = {}
-            date = datetime.strftime(row[10], '%Y%m%d')
-            record['demand'] = row[0]
-            record['major'] = row[1]
-            record['sub_major'] = row[2]
-            record['minor'] = row[3]
-            record['sub_minor'] = row[4]
-            record['budget'] = row[5]
-            record['voted_charged'] = row[6]
-            record['plan_nonplan'] = row[7]
-            record['soe'] = row[8]
-            record['soe_desc'] = row[9]
+            date = datetime.strftime(row[11], '%Y%m%d')
+            record['demand'] = row[1]
+            record['major'] = row[2]
+            record['sub_major'] = row[3]
+            record['minor'] = row[4]
+            record['sub_minor'] = row[5]
+            record['budget'] = row[6]
+            record['voted_charged'] = row[7]
+            record['plan_nonplan'] = row[8]
+            record['soe'] = row[9]
+            record['soe_desc'] = row[10]
             record['date'] = date
-            record['sanction'] = row[11]
-            record['addition'] = row[12]
-            record['savings'] = row[13]
-            record['revised'] = row[14]
+            record['sanction'] = row[12]
+            record['addition'] = row[13]
+            record['savings'] = row[14]
+            record['revised'] = row[15]
 
             response_data['records'].append(record)
 
