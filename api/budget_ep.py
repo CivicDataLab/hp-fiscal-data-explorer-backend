@@ -3,21 +3,27 @@ budget data endpoints
 '''
 import json
 from datetime import datetime
+
 import falcon
 from api.db import connection
 
 def validate_date(req, resp, resource, params):
 
+
+def validate_date(req, resp, resource, params):
+    '''
+    check for required parameters in query string and validate date format.
+    '''
     params = req.params
     if 'start' not in params or 'end' not in params:
-        resp.status = falcon.HTTP_400
-        raise falcon.HTTPBadRequest('Incomplete Request', 'start and end date is required')
+        resp.status = falcon.HTTP_400  #pylint: disable=no-member
+        raise falcon.HTTPBadRequest('Incomplete Request', 'start and end date is required')  #pylint: disable=no-member
     try:
-        start = datetime.strptime(params['start'], '%Y-%m-%d')
-        end = datetime.strptime(params['end'], '%Y-%m-%d')
+        datetime.strptime(params['start'], '%Y-%m-%d')
+        datetime.strptime(params['end'], '%Y-%m-%d')
     except ValueError as err:
-        resp.status = falcon.HTTP_400
-        raise falcon.HTTPBadRequest('Invalid Params', str(err))
+        resp.status = falcon.HTTP_400  #pylint: disable=no-member
+        raise falcon.HTTPBadRequest('Invalid Params', str(err))  #pylint: disable=no-member
 
 @falcon.before(validate_date)
 class DetailExpenditure():
@@ -32,8 +38,8 @@ class DetailExpenditure():
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
 
-        query_string = "select * from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}'"
-        query = connection.execute(query_string.format(start, end))
+        query_string = "select * from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}'"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string.format(start, end))
         data_rows = query.fetchall()
 
         response_data = {'records': []}
@@ -59,5 +65,5 @@ class DetailExpenditure():
             response_data['records'].append(record)
 
 
-        resp.status = falcon.HTTP_200
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps(response_data)
