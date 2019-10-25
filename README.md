@@ -1,4 +1,8 @@
 # Himachal Pradesh Fiscal Data explorer
+
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL 3.0-lightgrey.svg)](https://github.com/CivicDataLab/hp-fiscal-data-explorer/blob/master/LICENSE)
+
+
 Himachal Pradesh Fiscal Data explorer for [Open Budgets India](https://openbudgetsindia.org/) Platform.
 
 ### Setup Instructions for the Scraper
