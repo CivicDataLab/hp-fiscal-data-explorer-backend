@@ -68,3 +68,27 @@ class DetailExpenditure():
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps(response_data)
+
+class ExpenditureSummary():
+    """Expenditure Summary"""
+
+    def on_get(self, req, resp):
+
+        query_string = "select * from himachal_budget_expenditure_summary"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string)
+        data_rows = query.fetchall()
+
+        response_data = {'records': []}
+        for row in data_rows:
+            record = {}
+            record['demand'] = row[1]
+            record['demand_description'] = row[2]
+            record['sanction_previous'] = row[3]
+            record['sanction_current'] = row[4]
+            response_data['records'].append(record)
+
+
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps(response_data)
+
+    
