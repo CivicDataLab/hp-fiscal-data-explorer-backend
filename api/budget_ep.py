@@ -5,10 +5,17 @@ import json
 from datetime import datetime
 
 import falcon
-
+from io import StringIO
 from api.db import CONNECTION
 
 
+
+
+class CORSMiddleware:
+    def process_request(self, req, resp):
+        resp.set_header('Access-Control-Allow-Origin', '*')
+
+        
 #NOTE: purposefully ignoring no-member errors
 # Ref https://github.com/falconry/falcon/issues/1553
 def validate_date(req, resp, resource, params):
@@ -67,7 +74,11 @@ class DetailExpenditure():
 
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
-        resp.body = json.dumps(response_data)
+        io = StringIO()
+        data = json.dump(response_data, io)
+        resp.body = io.getvalue()
+
+        
 
 class ExpenditureSummary():
     """Expenditure Summary"""
@@ -90,5 +101,6 @@ class ExpenditureSummary():
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps(response_data)
+        
 
     
