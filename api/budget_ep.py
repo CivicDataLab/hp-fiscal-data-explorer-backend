@@ -3,7 +3,7 @@ budget data endpoints
 '''
 import json
 from datetime import datetime
-
+import pdb
 import falcon
 from io import StringIO
 from api.db import CONNECTION
@@ -45,7 +45,6 @@ class DetailExpenditure():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
-
         query_string = "select * from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}'"  # pylint: disable=line-too-long
         query = CONNECTION.execute(query_string.format(start, end))
         data_rows = query.fetchall()
@@ -71,8 +70,7 @@ class DetailExpenditure():
             record['revised'] = row[15]
 
             response_data['records'].append(record)
-
-
+            
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         io = StringIO()
         data = json.dump(response_data, io)
@@ -104,3 +102,50 @@ class ExpenditureSummary():
         
 
     
+@falcon.before(validate_date)
+class DetailExpenditure01():
+    '''
+    detail exp
+    '''
+    def on_get(self, req, resp):
+        '''
+        method for getting detail expenditure
+        '''
+        params = req.params
+        start = datetime.strptime(params['start'], '%Y-%m-%d')
+        end = datetime.strptime(params['end'], '%Y-%m-%d')
+        query_string = "select * from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}'"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string.format(start, end))
+        data_rows = query.fetchall()
+
+        response_data = {'records': []}
+        for row in data_rows:
+            record = {}
+            date = datetime.strftime(row[11], '%Y%m%d')
+            record['demand'] = row[1]
+            record['major'] = row[2]
+            record['sub_major'] = row[3]
+            record['minor'] = row[4]
+            record['sub_minor'] = row[5]
+            record['budget'] = row[6]
+            record['voted_charged'] = row[7]
+            record['plan_nonplan'] = row[8]
+            record['soe'] = row[9]
+            record['date'] = date
+            record['sanction'] = row[12]
+            record['addition'] = row[13]
+            record['savings'] = row[14]
+            record['revised'] = row[15]
+
+            response_data['records'].append(record)
+        list_ = []
+
+        for i in response_data['records']:
+            list_.append(list(i.values()))
+
+        
+            
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        io = StringIO()
+        data = json.dump(list_, io)
+        resp.body = io.getvalue()
