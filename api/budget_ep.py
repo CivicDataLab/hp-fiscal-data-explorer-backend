@@ -94,6 +94,7 @@ class ExpenditureSummary():
             record['demand_description'] = row[2]
             record['sanction_previous'] = row[3]
             record['sanction_current'] = row[4]
+            record['pct_change'] = row[5]
             response_data['records'].append(record)
 
 
