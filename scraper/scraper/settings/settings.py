@@ -20,7 +20,8 @@ SPIDER_MODULES = ['scraper.spiders']
 NEWSPIDER_MODULE = 'scraper.spiders'
 
 PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '..'))
-DATASET_PATH = path.abspath(path.join(PROJECT_PATH, '../datasets'))
+SPENDING_DATA_PATH = path.abspath(path.join(PROJECT_PATH, '../spending_data'))
+BUDGET_DATA_PATH = path.abspath(path.join(PROJECT_PATH, '../budget_data'))
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scraper (+http://www.yourdomain.com)'

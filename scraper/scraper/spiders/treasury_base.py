@@ -13,7 +13,7 @@ import scrapy
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 
-from scraper.settings import DATASET_PATH
+from scraper.settings import SPENDING_DATA_PATH
 from scraper.utils import parsing_utils
 
 DATASET_PAGE_ERROR_MSG = 'There is no record with given values'
@@ -51,7 +51,7 @@ class TreasuryBaseSpider(scrapy.Spider):
             'query': self.name, 'treasury': params['treasury_name'],
             'ddo': params['ddo_code'], 'date': '{}-{}'.format(params['start'], params['end'])
         })
-        filepath = os.path.join(DATASET_PATH, filename)
+        filepath = os.path.join(SPENDING_DATA_PATH, self.name.split('_')[-1], filename)
 
         # don't request the same dataset again if it's already collected previously
         # check if a file with a particular dataset name exist, if it does then
@@ -202,7 +202,7 @@ class TreasuryBaseSpider(scrapy.Spider):
         collects and return ddo code for a treasury.
         '''
         try:
-            ddo_dir_path = os.path.join(DATASET_PATH, '{}_ddo_codes'.format(treasury_id))
+            ddo_dir_path = os.path.join(SPENDING_DATA_PATH, '{}_ddo_codes'.format(treasury_id))
 
             # NOTE: Ref-https://stackoverflow.com/a/44031522/3860168
             ddo_files = glob.glob('{}/*.csv'.format(ddo_dir_path))

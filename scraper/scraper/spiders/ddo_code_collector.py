@@ -8,7 +8,7 @@ from urllib.parse import parse_qs, urlencode
 
 import scrapy
 
-from scraper.settings import DATASET_PATH
+from scraper.settings import SPENDING_DATA_PATH
 
 
 class DDOCodeCollector(scrapy.Spider):
@@ -51,7 +51,7 @@ class DDOCodeCollector(scrapy.Spider):
 
         treasury_code = response.meta.get('treasury')
 
-        dir_path = os.path.join(DATASET_PATH, '{}_ddo_codes'.format(treasury_code))
+        dir_path = os.path.join(SPENDING_DATA_PATH, '{}_ddo_codes'.format(treasury_code))
         if not os.path.exists(dir_path):
             os.mkdir(dir_path)
 
