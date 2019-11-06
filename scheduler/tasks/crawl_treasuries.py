@@ -39,7 +39,7 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
 
 with DAG('crawl_treasuries',
          default_args=DEFAULT_ARGS,
-         schedule_interval='30 4 * * *',  # the timezone is UTC here.
+         schedule_interval='30 10 * * *',  # the timezone is UTC here.
          catchup=False
         ) as dag:
 
