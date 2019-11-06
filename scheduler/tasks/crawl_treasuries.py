@@ -2,6 +2,7 @@
 Crawler DAG definition.
 '''
 
+import glob
 from datetime import datetime
 from os import path
 from string import Template
@@ -27,7 +28,9 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
     Branch the tasks based on weekday.
     '''
     # check if the execution day is 'Friday'
-    if execution_date.weekday() == 3:
+    if(execution_date.weekday() == 3 or
+       not glob.glob('{}/*_ddo_codes'.format(SPENDING_DATA_PATH))
+       ):
         return ['crawl_ddo_codes', 'crawl_expenditure', 'crawl_receipts']
 
     return ['crawl_expenditure', 'crawl_receipts']
