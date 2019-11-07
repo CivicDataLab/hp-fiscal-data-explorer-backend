@@ -177,4 +177,32 @@ class DetailExpenditureWeek():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         io = StringIO()
         resp.body = json_response_week_wise
+
+
+@falcon.before(validate_date)
+class DetailExpenditureMonth():
+    '''
+    detail exp
+    '''
+    def on_get(self, req, resp):
+        '''
+        method for getting detail expenditure
+        '''
+        params = req.params
+        start = datetime.strptime(params['start'], '%Y-%m-%d')
+        end = datetime.strptime(params['end'], '%Y-%m-%d')
+        query_string = "select * from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}'" .format(start,end) # pylint: disable=line-too-long
+        budget_hoa = pd.read_sql(query_string, CONNECTION, parse_dates = ['date'])
+        budget_hoa = budget_hoa.groupby(['demand','major','sub_major','minor','sub_minor','budget','voted_charged','plan_nonplan','SOE','SOE_description', pd.Grouper(key='date', freq='1M')])[['SANCTION','ADDITION','SAVING','REVISED']].sum().reset_index().sort_values('date')
+        budget_hoa['date'] = budget_hoa['date'].dt.strftime('%Y-%m-%d')
+        budget_hoa.reset_index(drop = True, inplace = True)
+        
+        response_data_df = budget_hoa.to_json(orient = 'values')
+        data_response =  json.dumps(response_data_df)
+        json_response_week_wise = data_response.replace("\\","");
+       
+            
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        io = StringIO()
+        resp.body = json_response_week_wise
         
