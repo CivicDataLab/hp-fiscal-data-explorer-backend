@@ -158,7 +158,7 @@ class DetailExpenditureWeek():
     '''
     def on_get(self, req, resp):
         '''
-        method for getting detail expenditure
+        sample payload(filter Key -> Head type (Major, Minor...), fileter Value -> )
         '''
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
@@ -168,13 +168,26 @@ class DetailExpenditureWeek():
         if req_body:
             payload = json.loads(req_body)
         else:
-            payload = {}
+            payload = {'filters':{'major':'2011, 2216', 'sub_major': '01,02' }}
 
         if not payload:
             query_string = "select sum(SANCTION), sum(ADDITION), sum(SAVING), sum(REVISED) from himachal_budget_allocation_expenditure WHERE date BETWEEN '{}' and '{}' group by WEEK(DATE(date))"  # pylint: disable=line-too-long
-        query = CONNECTION.execute(query_string.format(start, end))
-        data_rows = query.fetchall()
+        else:
+            select = "SELECT major, sum(SANCTION), sum(ADDITION), sum(SAVING), sum(REVISED)" 
+            from_str = "FROM himachal_budget_allocation_expenditure"
+            where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
+            groupby = "GROUP BY WEEK(DATE(date))"
+            
+            for key,value in payload['filters'].items():
+                where += "AND {key} IN ({value})".format(key=key, value=value)
+                groupby += ", {key}".format(key=key)
+            
+            
+            query_string = select + ' ' + from_str + '' + where + ' ' + groupby
+        
 
+        query = CONNECTION.execute(query_string)
+        data_rows = query.fetchall()
         records = []
         for row in data_rows:
             records.append(row.values())
