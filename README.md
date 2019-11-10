@@ -1,6 +1,6 @@
-# Himachal Pradesh Fiscal Data explorer
+# Backend for Himachal Pradesh Fiscal Data explorer
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://github.com/CivicDataLab/hp-fiscal-data-explorer/blob/master/LICENSE)
+[![License: AGPLv3.0](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://github.com/CivicDataLab/hp-fiscal-data-explorer/blob/master/LICENSE)
 
 Himachal Pradesh Fiscal Data explorer for [Open Budgets India](https://openbudgetsindia.org/) Platform.
 
