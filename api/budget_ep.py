@@ -175,7 +175,7 @@ class DetailExpenditureWeek():
                 GROUP BY WEEK(DATE(date))
             """
         else:
-            select = "SELECT major, sum(SANCTION), sum(ADDITION), sum(SAVING), sum(REVISED)"
+            select = "SELECT sum(SANCTION), sum(ADDITION), sum(SAVING), sum(REVISED)"
             from_str = "FROM himachal_budget_allocation_expenditure"
             where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY WEEK(DATE(date))"
