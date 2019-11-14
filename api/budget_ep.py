@@ -3,9 +3,8 @@ budget data endpoints
 '''
 import json
 from datetime import datetime
-
+import pandas as pd
 import falcon
-
 from api.db import CONNECTION
 
 
@@ -196,3 +195,31 @@ class DetailExpenditureWeek():
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
+
+
+class AccountHeads():
+    '''
+    This API will give permutations and combinations of all account heads
+    '''
+    def on_get(self, req, resp):
+        '''
+        Method for getting Permutations Combinations of account heads
+        '''
+        query_string = "select demand,major,sub_major,minor,sub_minor,budget,plan_nonplan,voted_charged, SOE from himachal_budget_allocation_expenditure where date='2017-04-01'"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string)
+        data_account_heads = pd.read_sql(query_string, CONNECTION)
+        response_data = {'demand': [],
+                        'major': [],
+                        'sub_major': [], 
+                        'minor':[],
+                        'sub_minor':[], 
+                        'budget':[],
+                        'plan_nonplan':[],
+                        'voted_charged':[],
+                        'SOE':[]}
+
+        for i in dataframe.columns:
+            response_data[i].append(data_account_heads[i].unique().tolist())
+            
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps(response_data)
