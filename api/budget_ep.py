@@ -218,7 +218,7 @@ class AccountHeads():
                         'voted_charged':[],
                         'SOE':[]}
 
-        for i in dataframe.columns:
+        for i in data_account_heads.columns:
             response_data[i].append(data_account_heads[i].unique().tolist())
             
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
