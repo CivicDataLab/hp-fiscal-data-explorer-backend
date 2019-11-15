@@ -45,5 +45,14 @@ with DAG('crawl_budget',
         bash_command=EXP_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
     )
 
+    REC_CRAWL_COMMAND = Template("""
+        cd $project_path && scrapy crawl budget_receipts -a date={{ execution_date.strftime('%d/%m/%Y') }}
+    """)
+
+    REC_CRAWL_TASK = BashOperator(
+        task_id='crawl_bud_receipts',
+        bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
+    )
 
 CREATE_DIR.set_downstream(EXP_CRAWL_TASK)
+CREATE_DIR.set_downstream(REC_CRAWL_TASK)
