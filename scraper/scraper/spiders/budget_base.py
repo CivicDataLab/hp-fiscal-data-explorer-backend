@@ -5,6 +5,7 @@ Budget Base Spider
 
 import csv
 import os
+import re
 from urllib.parse import urlencode
 
 import scrapy
@@ -186,6 +187,9 @@ class ReceiptBaseSpider(BudgetBaseSpider):
 
         self.date = kwargs.pop('date')
 
+        if not re.match(r'\d{2}/\d{2}/\d{4}', self.date):
+            raise CloseSpider('Wrong date format, please use dd/mm/yyyy!')
+
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(ReceiptBaseSpider, cls).from_crawler(crawler, *args, **kwargs)
@@ -196,7 +200,8 @@ class ReceiptBaseSpider(BudgetBaseSpider):
         '''
         use to close globally open dataset file after all major code requests are finished.
         '''
-        self.dataset_file.close()
+        if hasattr(self, 'dataset_file'):
+            self.dataset_file.close()
         spider.logger.info('Spider closed: %s', spider.name)
 
     def make_dataset_request(self, url, callback, params):
