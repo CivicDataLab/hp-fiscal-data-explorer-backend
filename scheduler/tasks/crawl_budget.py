@@ -24,7 +24,7 @@ DEFAULT_ARGS = {
 
 with DAG('crawl_budget',
          default_args=DEFAULT_ARGS,
-         schedule_interval='30 9 * * *',  # the timezone is UTC here.
+         schedule_interval='30 15 * * *',  # the timezone is UTC here.
          catchup=False
         ) as dag:
 
