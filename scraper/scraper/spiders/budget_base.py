@@ -13,7 +13,7 @@ from scrapy import signals
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 
-from scraper.settings import DATASET_PATH
+from scraper.settings import BUDGET_DATA_PATH
 from scraper.utils import parsing_utils
 
 
@@ -65,7 +65,7 @@ class ExpenditureBaseSpider(BudgetBaseSpider):
         # generate a filepath to store the dataset in.
         filename = '{}_{}.csv'.format(self.name, self.date)
 
-        filepath = os.path.join(DATASET_PATH, filename)
+        filepath = os.path.join(BUDGET_DATA_PATH, self.name.split('_')[-1], filename)
 
         # don't request the same dataset again if it's already collected previously
         # check if a file with a particular dataset name exist, if it does then
@@ -239,7 +239,7 @@ class ReceiptBaseSpider(BudgetBaseSpider):
         # generate a filepath to store the dataset in.
         # here we replace '/' with '_' to avoid name issues due to date format: dd/mm/yyyy
         filename = '{}_{}.csv'.format(self.name, self.date.replace('/', '_'))
-        filepath = os.path.join(DATASET_PATH, filename)
+        filepath = os.path.join(BUDGET_DATA_PATH, self.name.split('_')[-1], filename)
 
         # don't request the same dataset again if it's already collected previously
         # check if a file with a particular dataset name exist, if it does then
