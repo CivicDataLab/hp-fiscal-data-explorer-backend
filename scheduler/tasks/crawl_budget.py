@@ -9,7 +9,8 @@ from string import Template
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 
-PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
+PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../../scraper'))
+BUDGET_DATA_PATH = path.abspath(path.join(PROJECT_PATH, 'budget_data'))
 
 DEFAULT_ARGS = {
     'owner': 'airflow',
@@ -29,14 +30,14 @@ with DAG('crawl_budget',
 
     CREATE_DIR = BashOperator(
         task_id='create_datasets_dir',
-        bash_command='''
-                     cd {}/scraper && if [ ! -d budget_datasets ]; then mkdir budget_datasets; fi
-                     '''.format(PROJECT_PATH)
+        bash_command="""
+            if [ ! -d {path} ]; then mkdir -p {path}/expenditures {path}/receipts; fi
+        """.format(path=BUDGET_DATA_PATH)
     )
 
     # Ref: https://airflow.apache.org/macros.html for the jinja variables used below.
     EXP_CRAWL_COMMAND = Template("""
-        cd $project_path/scraper && scrapy crawl budget_expenditures -a date={{ ds_nodash }}
+        cd $project_path && scrapy crawl budget_expenditures -a date={{ ds_nodash }}
     """)
 
     EXP_CRAWL_TASK = BashOperator(
