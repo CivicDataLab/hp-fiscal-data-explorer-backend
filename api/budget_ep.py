@@ -3,7 +3,6 @@ budget data endpoints
 '''
 import json
 from datetime import datetime
-import pandas as pd
 import falcon
 from api.db import CONNECTION
 
@@ -182,7 +181,6 @@ class DetailExpenditureWeek():
 
             for key, value in payload['filters'].items():
                 where += "AND {key} IN ({value})".format(key=key, value=value)
-               
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
 
         query = CONNECTION.execute(query_string)
@@ -207,19 +205,10 @@ class AccountHeads():
         '''
         query_string = "select demand,major,sub_major,minor,sub_minor,budget,plan_nonplan,voted_charged, SOE from himachal_budget_allocation_expenditure where date='2017-04-01'"  # pylint: disable=line-too-long
         query = CONNECTION.execute(query_string)
-        data_account_heads = pd.read_sql(query_string, CONNECTION)
-        response_data = {'demand': [],
-                        'major': [],
-                        'sub_major': [], 
-                        'minor':[],
-                        'sub_minor':[], 
-                        'budget':[],
-                        'plan_nonplan':[],
-                        'voted_charged':[],
-                        'SOE':[]}
-
-        for i in data_account_heads.columns:
-            response_data[i].append(data_account_heads[i].unique().tolist())
-            
+        data_rows = query.fetchall()
+        records = []
+        for row in data_rows:
+            records.append(row.values())
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
-        resp.body = json.dumps(response_data)
+        resp.body = json.dumps({'records':records, 'count': len(records)})
+        
