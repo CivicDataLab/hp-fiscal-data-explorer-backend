@@ -299,7 +299,7 @@ class ReceiptBaseSpider(BudgetBaseSpider):
 
     def parse_dataset(self, response):
         '''
-        parse receipt data.
+        parse receipts data.
         '''
         response.selector.remove_namespaces()
 
