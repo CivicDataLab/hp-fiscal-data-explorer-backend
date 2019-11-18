@@ -192,7 +192,8 @@ class ReceiptBaseSpider(BudgetBaseSpider):
 
         self.date = kwargs.pop('date')
 
-        if not re.match(r'\d{2}/\d{2}/\d{4}', self.date):
+        date_format_pattern = r'\d{2}/\d{2}/\d{4}'
+        if not re.match(date_format_pattern, self.date):
             raise CloseSpider('Wrong date format, please use dd/mm/yyyy!')
 
     @classmethod
