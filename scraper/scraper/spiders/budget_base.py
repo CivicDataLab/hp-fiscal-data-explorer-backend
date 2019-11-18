@@ -62,15 +62,19 @@ class ExpenditureBaseSpider(BudgetBaseSpider):
         '''
         Construct and yield a scrapy request for a dataset.
         '''
-        # generate a filepath to store the dataset in.
+        # generate a filename to store the dataset in.
         filename = '{}_{}.csv'.format(self.name, self.date)
 
-        filepath = os.path.join(BUDGET_DATA_PATH, self.name.split('_')[-1], filename)
+        # directory to store the dataset file, either expenditures or receipts
+        budget_data_dir = self.name.split('_')[-1]
+
+        # path to the file to save the records
+        dataset_filepath = os.path.join(BUDGET_DATA_PATH, budget_data_dir, filename)
 
         # don't request the same dataset again if it's already collected previously
         # check if a file with a particular dataset name exist, if it does then
         # also check if it's empty or not, if it's empty we request it again.
-        if not os.path.exists(filepath) or not os.stat(filepath).st_size:
+        if not os.path.exists(dataset_filepath) or not os.stat(dataset_filepath).st_size:
             query_params = {
                 'from_date': params['date'],  # format: yyyymmdd
                 'To_date': params['date'],      # format: yyyymmdd
@@ -83,7 +87,8 @@ class ExpenditureBaseSpider(BudgetBaseSpider):
             yield scrapy.Request(
                 self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
-                errback=self.handle_err, meta={'filepath': filepath}
+                errback=self.handle_err,
+                meta={'filepath': dataset_filepath}
             )
         self.logger.warning('Dataset file already exists')
         raise CloseSpider('Dataset file already exists')
