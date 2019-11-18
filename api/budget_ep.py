@@ -182,13 +182,13 @@ class DetailExpenditureWeek():
 
             for key, value in payload['filters'].items():
                 where += "AND {key} IN ({value})".format(key=key, value=value)
-                groupby += ", {key}".format(key=key)
-
+               
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
 
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
+        print(query_string)
         for row in data_rows:
             records.append(row.values())
         data_response = json.dumps({'records': records, 'count': len(records)})
