@@ -46,17 +46,22 @@ class TreasuryBaseSpider(scrapy.Spider):
         '''
         Construct and yield a scrapy request for a dataset.
         '''
-        # generate a filepath to store the dataset in.
+        # generate a filename to store the dataset in.
         filename = parsing_utils.make_dataset_file_name({
             'query': self.name, 'treasury': params['treasury_name'],
             'ddo': params['ddo_code'], 'date': '{}-{}'.format(params['start'], params['end'])
         })
-        filepath = os.path.join(SPENDING_DATA_PATH, self.name.split('_')[-1], filename)
+
+        # directory to store the dataset file, either expenditures or receipts
+        spending_data_dir = self.name.split('_')[-1]
+
+        # path to the file to save the records
+        dataset_filepath = os.path.join(SPENDING_DATA_PATH, spending_data_dir, filename)
 
         # don't request the same dataset again if it's already collected previously
         # check if a file with a particular dataset name exist, if it does then
         # also check if it's empty or not, if it's empty we request it again.
-        if not os.path.exists(filepath) or not os.stat(filepath).st_size:
+        if not os.path.exists(dataset_filepath) or not os.stat(dataset_filepath).st_size:
 
             treasury_id = params['treasury_id']
             query_params = {
@@ -70,7 +75,8 @@ class TreasuryBaseSpider(scrapy.Spider):
             return scrapy.Request(
                 self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
-                errback=self.handle_err, meta={'filepath': filepath, 'treasury_id': treasury_id}
+                errback=self.handle_err,
+                meta={'filepath': dataset_filepath, 'treasury_id': treasury_id}
             )
         return None
 
@@ -166,7 +172,7 @@ class TreasuryBaseSpider(scrapy.Spider):
 
         self.crawler.stats.inc_value('{}/dataset_count'.format(treasury))
 
-        # prepare file name and its path to write the file.
+        # get the filepath to save the records from meta
         filepath = response.meta.get('filepath')
 
         with open(filepath, 'w') as output_file:
