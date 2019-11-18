@@ -7,7 +7,7 @@ from scraper.spiders import budget_base
 
 class BudgetExpendituresSpider(budget_base.ExpenditureBaseSpider):
     '''
-    BudgetReceiptsSpider
+    BudgetExpendituresSpider
     '''
     name = 'budget_expenditures'
 
@@ -18,7 +18,7 @@ class BudgetExpendituresSpider(budget_base.ExpenditureBaseSpider):
 
     query_index = 9
 
-    unit = '.00001'
+    unit = '.00001'  # amount unit, .001: Thousands, .00001: Lakhs, 1: Rupees
 
 class BudgetReceiptsSpider(budget_base.ReceiptBaseSpider):
     '''
@@ -29,4 +29,4 @@ class BudgetReceiptsSpider(budget_base.ReceiptBaseSpider):
     # dataset is collected from here.
     query_url = 'https://himkosh.nic.in/eHPOLTIS/PublicReports/Receipt.asmx/GetReceiptMajorDetail'
 
-    unit = '1'
+    unit = '1'  # index of the unit of amount, 0: Rupees, 1: Thousand, 2: Lakh

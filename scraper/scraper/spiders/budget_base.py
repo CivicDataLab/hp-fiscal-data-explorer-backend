@@ -199,7 +199,9 @@ class ReceiptBaseSpider(BudgetBaseSpider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         spider = super(ReceiptBaseSpider, cls).from_crawler(crawler, *args, **kwargs)
-        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)  #pylint: disable=no-member
+
+        # NOTE: Ref-https://docs.scrapy.org/en/latest/topics/signals.html#spider-closed
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
 
     def spider_closed(self, spider):
@@ -265,7 +267,7 @@ class ReceiptBaseSpider(BudgetBaseSpider):
                     'date': self.date,
                     'unit': self.unit,
                     'public_head_bool': public_head_bool,
-                    'major_code': '0000',  # we use all major heads
+                    'major_code': '0000',  # code to select all major heads
                     'csv_writer': csv_writer
                 }
                 yield self.make_dataset_request(self.query_url, self.parse_major_codes, params)
