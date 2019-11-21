@@ -16,6 +16,7 @@ Himachal Pradesh Fiscal Data explorer for [Open Budgets India](https://openbudge
 - `cp scraper/settings/settings.py scraper/settings/local.py`
 - Edit the `scraper/settings/local.py` with setting values you want to keep like `DOWNLOAD_DELAY`, `CONCURRENT_REQUESTS` and custom settings like `DATASETS_PATH` etc.
 - create a `datasets` directory at the path specified by `DATASET_PATH` variable. e.g. `hp-fiscal-data-explorer/scraper/datasets` if you didn't update the default value of the variable `DATASET_PATH`.
+-create a `datasets` directory at the path specified by `DATASET_PATH` variable. e.g. `hp-fiscal-data-explorer/scraper/budget_data/receipts`.
 
 #### To Activate the environment once setup.
 
@@ -34,6 +35,10 @@ For Treasury Receipts.
 For Budget Expenditure.
 - `scrapy crawl budget_expenditures -a date=20190531`
 
+For Budget Receipts.
+- `scrapy crawl budget_receipts -a date=31/05/2019`
+
 NOTES:
 - the arguments `start` and `end` specifies the date range for datasets. The date format is `yyyymmdd`.
+- the date argument in budget receipts is in format `dd/mm/yyyy`
 - the datasets will be `CSV` files with name in the format: `treasury_expenditures_<treasury>_<ddo>_<timestamp>.csv` for expenditures.
