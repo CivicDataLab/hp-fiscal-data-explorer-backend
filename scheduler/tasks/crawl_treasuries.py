@@ -2,6 +2,7 @@
 Crawler DAG definition.
 '''
 
+import glob
 from datetime import datetime
 from os import path
 from string import Template
@@ -10,7 +11,8 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import BranchPythonOperator
 
-PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../..'))
+PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '../../scraper'))
+SPENDING_DATA_PATH = path.abspath(path.join(PROJECT_PATH, 'spending_data'))
 
 DEFAULT_ARGS = {
     'owner': 'airflow',
@@ -27,7 +29,9 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
     Branch the tasks based on weekday.
     '''
     # check if the execution day is 'Friday'
-    if execution_date.weekday() == 3:
+    if(execution_date.weekday() == 3 or
+       not glob.glob('{}/*_ddo_codes'.format(SPENDING_DATA_PATH))
+       ):
         return ['crawl_ddo_codes', 'crawl_expenditure', 'crawl_receipts']
 
     return ['crawl_expenditure', 'crawl_receipts']
@@ -35,25 +39,25 @@ def branch_tasks(execution_date, **kwargs):  # pylint: disable=unused-argument
 
 with DAG('crawl_treasuries',
          default_args=DEFAULT_ARGS,
-         schedule_interval='30 4 * * *',  # the timezone is UTC here.
+         schedule_interval='30 10 * * *',  # the timezone is UTC here.
          catchup=False
         ) as dag:
 
     CREATE_DIR = BashOperator(
         task_id='create_datasets_dir',
-        bash_command='cd {}/scraper && if [ ! -d datasets ]; then mkdir datasets; fi'.format(
-            PROJECT_PATH
-        )
+        bash_command="""
+            if [ ! -d {path} ]; then mkdir -p {path}/expenditures {path}/receipts; fi
+        """.format(path=SPENDING_DATA_PATH)
     )
 
     CRAWL_DDO_CODES = BashOperator(
         task_id='crawl_ddo_codes',
-        bash_command='cd {}/scraper && scrapy crawl ddo_collector'.format(PROJECT_PATH)
+        bash_command='cd {} && scrapy crawl ddo_collector'.format(PROJECT_PATH)
     )
 
     # Ref: https://airflow.apache.org/macros.html for the jinja variables used below.
     EXP_CRAWL_COMMAND = Template("""
-        cd $project_path/scraper && scrapy crawl treasury_expenditures -a start={{ ds_nodash }} -a end={{ ds_nodash }}
+        cd $project_path && scrapy crawl treasury_expenditures -a start={{ ds_nodash }} -a end={{ ds_nodash }}
     """)
 
     EXP_CRAWL_TASK = BashOperator(
@@ -63,7 +67,7 @@ with DAG('crawl_treasuries',
     )
 
     REC_CRAWL_COMMAND = Template("""
-        cd $project_path/scraper && scrapy crawl treasury_receipts -a start={{ ds_nodash }} -a end={{ ds_nodash }}
+        cd $project_path && scrapy crawl treasury_receipts -a start={{ ds_nodash }} -a end={{ ds_nodash }}
     """)
 
     REC_CRAWL_TASK = BashOperator(
