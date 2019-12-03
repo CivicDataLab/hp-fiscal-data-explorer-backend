@@ -250,7 +250,7 @@ class AccountHeads():
         '''
         Method for getting Permutations Combinations of account heads
         '''
-        query_string = "select demand,major,sub_major,minor,sub_minor,budget,plan_nonplan,voted_charged, SOE from himachal_budget_allocation_expenditure where date='2017-04-01'"  # pylint: disable=line-too-long
+        query_string = "select demand,major,sub_major,minor,sub_minor, budget, voted_charged, plan_nonplan, SOE from himachal_budget_allocation_expenditure GROUP BY demand, major, sub_major ,minor, sub_minor, budget, voted_charged, plan_nonplan, SOE"  # pylint: disable=line-too-long
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
