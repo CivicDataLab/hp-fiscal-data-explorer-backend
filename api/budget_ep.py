@@ -42,7 +42,7 @@ class DetailExpenditure():
     '''
     def on_get(self, req, resp):
         '''
-        method for getting detail expenditure
+        method for getting detail expenditure on daily basis
         '''
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
@@ -105,7 +105,7 @@ class ExpenditureSummary():
 @falcon.before(validate_date)
 class DetailExpenditure01():
     '''
-    detail exp
+    detail exp without keys on daily basis
     '''
     def on_get(self, req, resp):
         '''
