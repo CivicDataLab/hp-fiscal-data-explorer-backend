@@ -82,3 +82,20 @@ class DetailReceiptsWeek():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
 
+class ReceiptsAccountHeads():
+    '''
+    This API will give permutations and combinations of all account heads
+    '''
+    def on_get(self, req, resp):
+        '''
+        Method for getting Permutations Combinations of account heads
+        '''
+        query_string = "select major,sub_major,minor,sub_minor from himachal_budget_receipts_data GROUP BY major, sub_major ,minor, sub_minor"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string)
+        data_rows = query.fetchall()
+        records = []
+        for row in data_rows:
+            records.append(row.values())
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps({'records':records, 'count': len(records)})
+        
