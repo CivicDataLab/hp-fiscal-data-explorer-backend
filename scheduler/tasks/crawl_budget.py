@@ -36,23 +36,23 @@ with DAG('crawl_budget',
     )
 
     # Ref: https://airflow.apache.org/macros.html for the jinja variables used below.
-    EXP_CRAWL_COMMAND = Template("""
+    EXPENDITURE_CRAWL_COMMAND = Template("""
         cd $project_path && scrapy crawl budget_expenditures -a date={{ ds_nodash }}
     """)
 
-    EXP_CRAWL_TASK = BashOperator(
-        task_id='crawl_bud_expenditure',
-        bash_command=EXP_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
+    EXPENDITURE_CRAWL_TASK = BashOperator(
+        task_id='crawl_budget_expenditure',
+        bash_command=EXPENDITURE_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
     )
 
-    REC_CRAWL_COMMAND = Template("""
+    RECEIPTS_CRAWL_COMMAND = Template("""
         cd $project_path && scrapy crawl budget_receipts -a date={{ execution_date.strftime('%d/%m/%Y') }}
     """)
 
-    REC_CRAWL_TASK = BashOperator(
-        task_id='crawl_bud_receipts',
-        bash_command=REC_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
+    RECEIPTS_CRAWL_TASK = BashOperator(
+        task_id='crawl_budget_receipts',
+        bash_command=RECEIPTS_CRAWL_COMMAND.substitute(project_path=PROJECT_PATH),
     )
 
-CREATE_DIR.set_downstream(EXP_CRAWL_TASK)
-CREATE_DIR.set_downstream(REC_CRAWL_TASK)
+CREATE_DIR.set_downstream(EXPENDITURE_CRAWL_TASK)
+CREATE_DIR.set_downstream(RECEIPTS_CRAWL_TASK)
