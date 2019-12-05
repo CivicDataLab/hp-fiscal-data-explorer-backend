@@ -242,6 +242,54 @@ class DetailExpenditureMonth():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
 
+@falcon.before(validate_date)
+class TreasuryExpenditureMonth():
+    '''
+    detail exp
+    '''
+    def on_post(self, req, resp):
+        '''
+        sample payload
+        {"filters": {"major": "2011, 2216", "sub_major": "01, 02"}}
+        '''
+        params = req.params
+        start = datetime.strptime(params['start'], '%Y-%m-%d')
+        end = datetime.strptime(params['end'], '%Y-%m-%d')
+
+        req_body = req.stream.read()
+        if req_body:
+            payload = json.loads(req_body)
+        else:
+            payload = {}
+
+        if not payload:
+            query_string = """
+                SELECT sum(BILLS), sum(GROSS), sum(AGDED), sum(NETPAYMENT)
+                FROM himachal_pradesh_district_spending_data
+                WHERE date BETWEEN '{}' and '{}'
+                GROUP BY MONTH(DATE(TRANSDATE))
+            """
+        else:
+            select = "SELECT sum(BILLS), sum(GROSS), sum(AGDED), sum(NETPAYMENT)"
+            from_str = "FROM himachal_pradesh_district_spending_data"
+            where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
+            groupby = "GROUP BY MONTH(DATE(TRANSDATE))"
+
+            for key, value in payload['filters'].items():
+                where += "AND {key} IN ({value})".format(key=key, value=value)
+            query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
+
+        query = CONNECTION.execute(query_string)
+        data_rows = query.fetchall()
+        records = []
+        print(query_string)
+        for row in data_rows:
+            records.append(row.values())
+        data_response = json.dumps({'records': records, 'count': len(records)})
+
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = data_response
+
 class AccountHeads():
     '''
     This API will give permutations and combinations of all account heads
