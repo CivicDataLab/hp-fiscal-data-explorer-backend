@@ -224,7 +224,7 @@ class TreasuryExpenditureWeek():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
 
-class AccountHeads():
+class DetailAccountHeads():
     '''
     This API will give permutations and combinations of all account heads
     '''
