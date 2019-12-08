@@ -66,7 +66,7 @@ class DetailExpenditureWeek():
             groupby = "GROUP BY WEEK(DATE(date))"
 
             for key, value in payload['filters'].items():
-                where += "AND {key} IN ({value})".format(key=key, value=value)
+                where += "AND {key} IN ('{value}')".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
 
         query = CONNECTION.execute(query_string)
@@ -162,7 +162,7 @@ class TreasuryExpenditureMonth():
             groupby = "GROUP BY MONTH(DATE(TRANSDATE))"
 
             for key, value in payload['filters'].items():
-                where += "AND {key} IN ({value})".format(key=key, value=value)
+                where += "AND {key} IN ('{value}')".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
 
         query = CONNECTION.execute(query_string)
@@ -210,7 +210,7 @@ class TreasuryExpenditureWeek():
             groupby = "GROUP BY WEEK(DATE(TRANSDATE))"
 
             for key, value in payload['filters'].items():
-                where += "AND {key} IN ({value})".format(key=key, value=value)
+                where += "AND {key} IN ('{value}')".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
 
         query = CONNECTION.execute(query_string)
