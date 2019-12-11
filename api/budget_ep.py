@@ -258,7 +258,6 @@ class DetailAccountHeadsTest():
         records = []
         for row in data_rows:
             records.append(row.values())        
-
         dict_hp = {}
 
         for rows in records:
@@ -268,6 +267,44 @@ class DetailAccountHeadsTest():
                     current_level[acc_heads] = {}
                 current_level = current_level[acc_heads]
 
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps({'records':dict_hp})
+
+class DetailAccountHeadsDesc():
+    '''
+    This API will give permutations and combinations of all account heads
+    '''
+    def on_get(self, req, resp):
+        '''
+        Method for getting Permutations Combinations of account heads
+        '''
+        query_string = "select demand,demand_desc,major, major_desc, sub_major, sub_major_desc, minor,minor_desc,sub_minor,sub_minor_desc, budget, voted_charged, plan_nonplan, SOE, SOE_description from himachal_budget_allocation_expenditure_data_desc GROUP BY demand,demand_desc,major,major_desc,sub_major,sub_major_desc,minor,minor_desc,sub_minor,sub_minor_desc, budget, voted_charged, plan_nonplan, SOE, SOE_description"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string)
+        data_rows = query.fetchall()
+       
+        records = []
+        records = [row.values() for row in data_rows]  
+        
+        records_with_desc = [] 
+        for i in range(len(records)):
+            records_list = []
+            for j in range(0,10,2):
+                records_list.append(['-'.join(records[i][j:j+2])])
+                
+            records_list.append(records[i][10:13])
+            records_list.append(['-'.join(records[i][13:15])])
+            records_list = [acc_heads for acc_heads_value in records_list for acc_heads in acc_heads_value]
+            records_with_desc.append(records_list)
+        
+        dict_hp = {}
+
+        for rows in records_with_desc:
+            current_level = dict_hp
+            for acc_heads in rows:
+                if acc_heads not in current_level:
+                    current_level[acc_heads] = {}
+                current_level = current_level[acc_heads]
+        
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps({'records':dict_hp})
 
