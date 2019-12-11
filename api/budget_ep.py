@@ -271,6 +271,33 @@ class DetailAccountHeadsTest():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps({'records':dict_hp})
 
+class UniqueAccountHeads():
+    '''
+    This API will give permutations and combinations of all account heads
+    '''
+    def on_get(self, req, resp):
+        '''
+        Method for getting Permutations Combinations of account heads
+        '''
+        query_string = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='himachal_pradesh_data' AND `TABLE_NAME`='himachal_budget_allocation_expenditure'"  # pylint: disable=line-too-long
+        get_column_names = CONNECTION.execute(query_string)
+        column_names = get_column_names.fetchall()
+        column_names_list  =  [row.values() for row in column_names]     
+        target_index = column_names_list.index(['SOE'])
+        list_acc_heads = column_names_list[1:target_index+1]
+      
+        dict_unique_acc_heads = {}
+        for acc_heads in list_acc_heads:
+            query_select = "select distinct {} from himachal_budget_allocation_expenditure".format(acc_heads[0])
+            query_unique_acc_heads = CONNECTION.execute(query_select)
+            unique_acc_heads_value = query_unique_acc_heads.fetchall()
+            unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
+            unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
+            dict_unique_acc_heads[acc_heads[0]] = unique_acc_heads_value_list
+        
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps(dict_unique_acc_heads)
+
 class TreasuryAccountHeads():
     '''
     This API will give permutations and combinations of all account heads
