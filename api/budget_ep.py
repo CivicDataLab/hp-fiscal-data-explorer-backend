@@ -236,10 +236,40 @@ class DetailAccountHeads():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
+
+
         for row in data_rows:
             records.append(row.values())
+
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps({'records':records, 'count': len(records)})
+
+class DetailAccountHeadsTest():
+    '''
+    This API will give permutations and combinations of all account heads
+    '''
+    def on_get(self, req, resp):
+        '''
+        Method for getting Permutations Combinations of account heads
+        '''
+        query_string = "select demand,major,sub_major,minor,sub_minor, budget, voted_charged, plan_nonplan, SOE from himachal_budget_allocation_expenditure GROUP BY demand, major, sub_major ,minor, sub_minor, budget, voted_charged, plan_nonplan, SOE"  # pylint: disable=line-too-long
+        query = CONNECTION.execute(query_string)
+        data_rows = query.fetchall()
+        records = []
+        for row in data_rows:
+            records.append(row.values())        
+
+        dict_hp = {}
+
+        for rows in records:
+            current_level = dict_hp
+            for acc_heads in rows:
+                if acc_heads not in current_level:
+                    current_level[acc_heads] = {}
+                current_level = current_level[acc_heads]
+
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps({'records':dict_hp})
 
 class TreasuryAccountHeads():
     '''
