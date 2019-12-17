@@ -150,13 +150,13 @@ class TreasuryExpenditureMonth():
 
         if not payload:
             query_string = """
-                SELECT sum(BILLS), sum(GROSS), sum(AGDED), sum(NETPAYMENT)
+                SELECT sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)
                 FROM himachal_pradesh_district_spending_data
                 WHERE date BETWEEN '{}' and '{}'
                 GROUP BY MONTH(DATE(TRANSDATE))
             """
         else:
-            select = "SELECT sum(BILLS), sum(GROSS), sum(AGDED), sum(NETPAYMENT)"
+            select = "SELECT sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_pradesh_district_spending_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY MONTH(DATE(TRANSDATE))"
@@ -198,13 +198,13 @@ class TreasuryExpenditureWeek():
 
         if not payload:
             query_string = """
-                SELECT sum(BILLS), sum(GROSS), sum(AGDED), sum(NETPAYMENT)
+                SELECT sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)
                 FROM himachal_pradesh_district_spending_data
                 WHERE date BETWEEN '{}' and '{}'
                 GROUP BY WEEK(DATE(TRANSDATE))
             """
         else:
-            select = "SELECT sum(BILLS), sum(GROSS), sum(AGDED), sum(NETPAYMENT)"
+            select = "SELECT sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_pradesh_district_spending_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY WEEK(DATE(TRANSDATE))"
