@@ -1,5 +1,5 @@
 '''
-Budget Base Spider
+Base Spider for budget crawling.
 '''
 # -*- coding: utf-8 -*-
 
@@ -84,7 +84,7 @@ class ExpenditureBaseSpider(BudgetBaseSpider):
                 'Unit' : params['unit']
             }
 
-            yield scrapy.Request(
+            return scrapy.Request(
                 self.query_url.format(urlencode(query_params)),
                 self.parse_dataset,
                 errback=self.handle_err,
@@ -258,7 +258,7 @@ class ReceiptBaseSpider(BudgetBaseSpider):
         if not os.path.exists(filepath) or not os.stat(filepath).st_size:
             self.dataset_file = open(filepath, 'w')
 
-            heads = ['Maj-Smj-Min-Smn [Sub Minor Head]', 'date','Total Receipt']
+            heads = ['Maj-Smj-Min-Smn [Sub Minor Head]', 'date', 'Total Receipt']
             csv_writer = csv.writer(self.dataset_file, delimiter=',')
             csv_writer.writerow(heads)
 
@@ -299,7 +299,7 @@ class ReceiptBaseSpider(BudgetBaseSpider):
 
     def parse_dataset(self, response):
         '''
-        parse receipt data.
+        parse receipts data.
         '''
         response.selector.remove_namespaces()
 
