@@ -25,3 +25,13 @@ def validate_date(req, resp, resource, params):
     except ValueError as err:
         resp.status = falcon.HTTP_400  #pylint: disable=no-member
         raise falcon.HTTPBadRequest('Invalid Params', str(err))  #pylint: disable=no-member
+
+def validate_vis_type(req, resp, resource, params):
+    '''
+    check for required parameters in query string and validate date format.
+    '''
+    params = req.params
+    vis_type = ['District','Week','Month']
+    if 'type' not in params or params['type'] not in vis_type:
+        resp.status = falcon.HTTP_400  #pylint: disable=no-member
+        raise falcon.HTTPBadRequest('Incomplete Request', 'please specify correct vis type (District, WEEK, MONTH)')  #pylint: disable=no-member
