@@ -6,9 +6,10 @@ from datetime import datetime
 import falcon
 import pdb
 from api.db import CONNECTION
-from api.utils import validate_date, CORSMiddleware, validate_vis_type
+from api.utils import validate_date, CORSMiddleware, validate_vis_range
 import time
 import pandas as pd
+
 
 class ExpenditureSummary():
     """Expenditure Summary"""
