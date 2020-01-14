@@ -11,6 +11,9 @@ pylint = "*"
 twisted = "*"
 psycopg2 = "*"
 apache-airflow = {extras = ["crypto", "password"],version = "*"}
+falcon = "*"
+gunicorn = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.6"
