@@ -35,7 +35,7 @@ class SchemesVisType():
         select = "SELECT District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
         from_str = "FROM himachal_budget_schemes_data"
         where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
-        groupby = "GROUP BY District {}(DATE(TRANSDATE))".format(vis_range)
+        groupby = "GROUP BY District, {}(DATE(TRANSDATE))".format(vis_range)
 
 
         for key, value in payload['filters'].items():
