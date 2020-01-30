@@ -76,7 +76,6 @@ class DetailExpenditureWeek():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        print(query_string)
         for row in data_rows:
             records.append(row.values())
         data_response = json.dumps({'records': records, 'count': len(records)})
@@ -124,7 +123,7 @@ class DetailExpenditureMonth():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        print(query_string)
+        
         for row in data_rows:
             records.append(row.values())
         data_response = json.dumps({'records': records, 'count': len(records)})
@@ -233,7 +232,7 @@ class TreasuryExpenditureWeek():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        print(query_string)
+    
         for row in data_rows:
             records.append(row.values())
         data_response = json.dumps({'records': records, 'count': len(records)})
@@ -370,7 +369,6 @@ class TreasuryAccountHeads():
         for key, value in params.items():
             where += "{key} IN ({value}) AND ".format(key=key, value=value)
         query_string = select + ' ' + from_str + ' ' + where[:len(where)-4] + ' ' + groupby
-        print(query_string)
 
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
