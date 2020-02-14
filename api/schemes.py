@@ -39,7 +39,7 @@ class SchemesVisType():
 
 
         for key, value in payload['filters'].items():
-            where += "AND {key} IN ('{value}')".format(key=key, value=value)
+            where += "AND {key} IN ({value})".format(key=key, value=value)
         query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
       
         query = CONNECTION.execute(query_string)
