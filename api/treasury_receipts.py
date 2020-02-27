@@ -39,7 +39,7 @@ class TreasuryReceiptsVisType():
 
 
         for key, value in payload['filters'].items():
-            where += "AND {key} IN ('{value}')".format(key=key, value=value)
+            where += "AND {key} IN ({value})".format(key=key, value=value)
         query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
       
         query = CONNECTION.execute(query_string)
@@ -123,3 +123,50 @@ class TreasuryReceiptsAccountHeads():
         
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps({'records':dict_hp})  
+
+class UniqueAccountHeadsTreaReceipts():
+    '''
+    This API will give permutations and combinations of all account heads
+    '''
+    def on_get(self, req, resp):
+        '''
+        Method for getting Permutations Combinations of account heads
+        '''
+        query_string = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='himachal_pradesh_data' AND `TABLE_NAME`='himachal_pradesh_district_receipts_data'"  # pylint: disable=line-too-long
+        get_column_names = CONNECTION.execute(query_string)
+        column_names = get_column_names.fetchall()
+        
+        column_names_list  =  [row.values() for row in column_names]     
+        
+        list_acc_heads_with_desc =column_names_list[2:8] + column_names_list[10:12]
+        
+        list_acc_heads_without_desc = []
+        list_acc_heads_without_desc = [acc_head[0] for acc_head in column_names_list if acc_head not in list_acc_heads_with_desc]
+        list_acc_heads_without_desc = list_acc_heads_without_desc[1:4]
+        
+        print(list_acc_heads_without_desc)
+        #list_acc_heads_without_desc = [acc_heads for acc_heads_value in list_acc_heads_without_desc  for acc_heads in acc_heads_value]
+        
+        dict_unique_acc_heads = {}
+       
+    
+        for acc_heads_index in range(0,8,2):
+            query_select = "select distinct concat_ws('-',{},{}) from himachal_pradesh_district_receipts_data".format(list_acc_heads_with_desc[acc_heads_index][0],list_acc_heads_with_desc[acc_heads_index+1][0])
+            print(query_select)
+            query_unique_acc_heads = CONNECTION.execute(query_select)
+            unique_acc_heads_value = query_unique_acc_heads.fetchall()
+            unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
+            unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
+            dict_unique_acc_heads[list_acc_heads_with_desc[acc_heads_index][0]] = unique_acc_heads_value_list
+
+        for acc_heads_index in range(0,3):
+            query_select = "select distinct {} from himachal_pradesh_district_receipts_data".format(list_acc_heads_without_desc[acc_heads_index])
+            print(query_select)
+            query_unique_acc_heads = CONNECTION.execute(query_select)
+            unique_acc_heads_value = query_unique_acc_heads.fetchall()
+            unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
+            unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
+            dict_unique_acc_heads[list_acc_heads_without_desc[acc_heads_index]] = unique_acc_heads_value_list
+
+        resp.status = falcon.HTTP_200  #pylint: disable=no-member
+        resp.body = json.dumps(dict_unique_acc_heads)
