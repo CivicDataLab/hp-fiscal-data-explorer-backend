@@ -23,16 +23,16 @@ class TreasuryReceiptsVisType():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
+        week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
         vis_range = params['range']
-
+       
         req_body = req.stream.read()
         if req_body:
             payload = json.loads(req_body)
         else:
             payload = {}
-
-    
-        select = "SELECT District,sum(NETRECEIPT)"
+        
+        select = "SELECT Week(DATE(BOOKDATE)),District,sum(NETRECEIPT)"
         from_str = "FROM himachal_pradesh_district_receipts_data"
         where = "WHERE BOOKDATE BETWEEN '{}' and '{}'".format(start, end)
         groupby = "GROUP BY District, {}(DATE(BOOKDATE))".format(vis_range)
@@ -41,29 +41,43 @@ class TreasuryReceiptsVisType():
         for key, value in payload['filters'].items():
             where += "AND {key} IN ({value})".format(key=key, value=value)
         query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
-      
+        print(query_string)
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        
+
         for row in data_rows:
             records.append(row.values())
-        dict_hp = {}
+
+        query_week_num = []
+        for i in records:
+            query_week_num.append(i[0])
 
         districts = []
         values = []
-
-        for i in records:
-            districts.append(i[0])
-            values.append(i[1:])
+        total_week_number = list(set(week_number + query_week_num))
+    
+        for i in records:   
+            districts.append(i[1])
+            values.append(i[2:])
 
         dict_hp = {}
 
-        for i in districts:
-            dict_hp[i] = []
+        for dist_name in districts:
+            dict_hp[dist_name] = []
+        for dist_len in range(0,len(districts)):
+            dict_hp[districts[dist_len]].append([query_week_num[dist_len],values[dist_len][0]])
 
-        for i in range(0,len(districts)):
-            dict_hp[districts[i]].append(values[i])
+        for week_num in total_week_number:
+            for key,values in dict_hp.items():
+                if  week_num not in [val for rec in values for val in rec]:
+                    dict_hp[key].append([week_num,0]) 
+                else:
+                    pass
+                dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
+
+        for key in dict_hp:
+            dict_hp[key] =[key_[1:] for key_ in dict_hp[key]]
 
         data_response = json.dumps({'records': dict_hp, 'count': len(records)})
 
