@@ -206,13 +206,13 @@ class TreasuryExpenditureVisType():
             for i in list_comp:
                 for key,values in dict_hp.items():
                     if  i not in [j for i in values for j in i]:
-                        dict_hp[key].append([i,0,0,0,0]) 
+                        dict_hp[key].append([i,[0,0,0,0]]) 
                     else:
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
 
             for key in dict_hp:
-                dict_hp[key] =[i[1:] for i in dict_hp[key]]
+                dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
 
             data_response = json.dumps({'records': dict_hp, 'count': len(records)})
 
@@ -262,7 +262,7 @@ class TreasuryExpenditureVisType():
             for month_num in total_month_number:
                 for key,values in dict_hp.items():
                     if  month_num not in [val for rec in values for val in rec]:
-                        dict_hp[key].append([month_num,[0]]) 
+                        dict_hp[key].append([month_num,[0,0,0,0]]) 
                     else:
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
