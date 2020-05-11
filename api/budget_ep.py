@@ -144,7 +144,15 @@ class TreasuryExpenditureVisType():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
+        week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
+        start_month = params['start'][5:7]
+        end_month = params['end'][5:7]
         vis_range = params['range']
+
+        if end_month <= start_month:
+            month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
+        else:
+            month_range = [*range(int(start_month),int(end_month)+1)]
 
         req_body = req.stream.read()
         if req_body:
@@ -152,44 +160,133 @@ class TreasuryExpenditureVisType():
         else:
             payload = {}
 
-    
-        select = "SELECT district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
-        from_str = "FROM himachal_pradesh_district_spending_data_desc"
-        where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
-        groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
+        if vis_range == 'Week':
+            select = "SELECT Week(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
+            from_str = "FROM himachal_pradesh_district_spending_data_desc"
+            where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
+            groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
 
 
-        for key, value in payload['filters'].items():
-            where += "AND {key} IN ({value})".format(key=key, value=value)
-        query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
-      
-        query = CONNECTION.execute(query_string)
-        data_rows = query.fetchall()
-        records = []
-        
-        for row in data_rows:
-            records.append(row.values())
-        dict_hp = {}
+            for key, value in payload['filters'].items():
+                where += "AND {key} IN ({value})".format(key=key, value=value)
+            query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
+            
+            print(query_string)
 
-        districts = []
-        values = []
+            query = CONNECTION.execute(query_string)
+            data_rows = query.fetchall()
+            records = []
+            
+            for row in data_rows:
+                records.append(row.values())
 
-        for i in records:
-            districts.append(i[0])
-            values.append(i[1:])
+            week_num = []
+            for i in records:
+                week_num.append(i[0])
 
-        dict_hp = {}
+            dict_hp = {}
 
-        for i in districts:
-            dict_hp[i] = []
+            districts = []
+            values = []
+            list_comp = list(set(week_number + week_num))
 
-        for i in range(0,len(districts)):
-            dict_hp[districts[i]].append(values[i])
 
-        data_response = json.dumps({'records': dict_hp, 'count': len(records)})
+            for i in records:
+                districts.append(i[1])
+                values.append(i[2:])
 
-        resp.status = falcon.HTTP_200  #pylint: disable=no-member
-        resp.body = data_response
+            dict_hp = {}
+
+            for i in districts:
+                dict_hp[i] = []
+
+            for i in range(0,len(districts)):
+                dict_hp[districts[i]].append([week_num[i],values[i][0:]])
+
+            for i in list_comp:
+                for key,values in dict_hp.items():
+                    if  i not in [j for i in values for j in i]:
+                        dict_hp[key].append([i,0,0,0,0]) 
+                    else:
+                        pass
+                    dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
+
+            for key in dict_hp:
+                dict_hp[key] =[i[1:] for i in dict_hp[key]]
+
+            data_response = json.dumps({'records': dict_hp, 'count': len(records)})
+
+            resp.status = falcon.HTTP_200  #pylint: disable=no-member
+            resp.body = data_response
+        else:
+            select = "SELECT Month(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
+            from_str = "FROM himachal_pradesh_district_spending_data_desc"
+            where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
+            groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
+
+
+            for key, value in payload['filters'].items():
+               where += "AND {key} IN ({value})".format(key=key, value=value)
+            query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
+            
+            query = CONNECTION.execute(query_string)
+            data_rows = query.fetchall()
+            records = []
+
+             
+            for row in data_rows:
+                records.append(row.values())
+            
+            records_temp = []
+
+            query_month_num = []
+            for i in records:
+                query_month_num.append(i[0])
+            districts = []
+            values_record = []
+            total_month_number = month_range
+            
+            
+            for i in records:
+                districts.append(i[1])
+                values_record.append(i[2:])
+
+            dict_hp = {}
+
+            for i in districts:
+                dict_hp[i] = []
+
+            for i in range(0,len(districts)):
+                dict_hp[districts[i]].append([query_month_num[i],values_record[i][0:]])
+            
+            for month_num in total_month_number:
+                for key,values in dict_hp.items():
+                    if  month_num not in [val for rec in values for val in rec]:
+                        dict_hp[key].append([month_num,[0]]) 
+                    else:
+                        pass
+                    dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
+
+            for key,values in dict_hp.items():
+                records_temp = []
+                for num in range(len(total_month_number)):
+                    for i in values:
+                        if total_month_number[num]== i[0]:
+                           records_temp.append(i)
+                dict_hp[key] = records_temp
+
+            
+            
+            for key in dict_hp:
+                dict_hp[key] =[key_[1:][0] for key_ in dict_hp[key]]
+
+            
+
+            data_response = json.dumps({'records': dict_hp, 'count': len(records)})
+
+            resp.status = falcon.HTTP_200  #pylint: disable=no-member
+            resp.body = data_response
+
 
 @falcon.before(validate_date)
 class TreasuryExpenditureWeek():
