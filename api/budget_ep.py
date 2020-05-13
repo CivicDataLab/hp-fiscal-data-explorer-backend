@@ -144,7 +144,10 @@ class TreasuryExpenditureVisType():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
-        week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
+        if start.strftime("%A") == 'Sunday':
+            week_number = [*range(start.isocalendar()[1],end.isocalendar()[1]-1)]
+        else:
+            week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
         start_month = params['start'][5:7]
         end_month = params['end'][5:7]
         vis_range = params['range']
