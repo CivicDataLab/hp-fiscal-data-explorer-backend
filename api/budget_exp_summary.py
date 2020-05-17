@@ -44,21 +44,6 @@ class AllocationExpenditureSummary():
         for i in range(0,len(financial_year)):
             financial_year_dict[financial_year[i]][demand[i]] = values[i]     
 
-
-        # response_data = {'records': []}
-        # for row in data_rows:
-        #     record = {}
-        #     record['demand'] = row[1]
-        #     record['demand_description'] = row[2]
-        #     record['sanction_previous'] = row[3]
-        #     record['sanction_current'] = row[4]
-        #     record['pct_change'] = row[5]
-        #     response_data['records'].append(record)
-
-
-        # resp.status = falcon.HTTP_200  #pylint: disable=no-member
-        # resp.body = json.dumps(response_data)
-
         data_response = json.dumps({'records': financial_year_dict, 'count': len(records)})
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
