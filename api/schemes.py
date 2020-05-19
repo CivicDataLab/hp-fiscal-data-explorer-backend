@@ -44,11 +44,10 @@ class SchemesVisType():
 
                 week_start_range = start.isocalendar()[1]-1
 
-
             offset_final = (end.weekday() - 5)%7
             last_saturday_final = end - timedelta(days=offset_final)
             
-            if (end_month <= start_month or end_month == 12):
+            if (int(end_month) < int(start_month) or int(end_month) == 12):
 
                end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
                offset_temp = (end_temp.weekday() - 5)%7
@@ -58,22 +57,19 @@ class SchemesVisType():
             else:
                 
                 week_number = [*range(week_start_range,last_saturday_final.isocalendar()[1]+1)]
-
-            # if start.strftime("%A") == 'Sunday':
-            #     week_number = [*range(start.isocalendar()[1],end.isocalendar()[1]-1)]
-            # else:
-            #     week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
-
-            select = "SELECT Week(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
+            
+            
+            select = "SELECT Week(DATE(TRANSDATE)),District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_budget_schemes_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
-            groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
+            groupby = "GROUP BY District, {}(DATE(TRANSDATE))".format(vis_range)
 
 
             for key, value in payload['filters'].items():
                 where += "AND {key} IN ({value})".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
             print(query_string)
+          
             query = CONNECTION.execute(query_string)
             data_rows = query.fetchall()
             records = []
@@ -128,6 +124,7 @@ class SchemesVisType():
                            records_temp.append(i)
                 dict_hp[key] = records_temp
             
+            
             for key in dict_hp:
                 dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
 
@@ -135,6 +132,7 @@ class SchemesVisType():
 
             resp.status = falcon.HTTP_200  #pylint: disable=no-member
             resp.body = data_response
+
         else:
 
             if end_month <= start_month:
@@ -142,10 +140,10 @@ class SchemesVisType():
             else:
                 month_range = [*range(int(start_month),int(end_month)+1)]
 
-            select = "SELECT Month(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
+            select = "SELECT Month(DATE(TRANSDATE)),District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_budget_schemes_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
-            groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
+            groupby = "GROUP BY District, {}(DATE(TRANSDATE))".format(vis_range)
 
 
             for key, value in payload['filters'].items():
@@ -163,13 +161,14 @@ class SchemesVisType():
             records_temp = []
 
             query_month_num = []
+
             for i in records:
                 query_month_num.append(i[0])
+
             districts = []
             values_record = []
             total_month_number = month_range
-            
-            
+
             for i in records:
                 districts.append(i[1])
                 values_record.append(i[2:])
@@ -198,16 +197,16 @@ class SchemesVisType():
                            records_temp.append(i)
                 dict_hp[key] = records_temp
 
-            
             for key in dict_hp:
-                dict_hp[key] =[key_[1:][0][0] for key_ in dict_hp[key]]
-
-            
+                dict_hp[key] =[key_[1:][0] for key_ in dict_hp[key]]
+           
 
             data_response = json.dumps({'records': dict_hp, 'count': len(records)})
 
             resp.status = falcon.HTTP_200  #pylint: disable=no-member
             resp.body = data_response
+
+
 class SchemesAccountHeads():
     '''
     This API will give permutations and combinations of all account heads
