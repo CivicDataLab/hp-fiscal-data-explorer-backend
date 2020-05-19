@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import falcon
 import pdb
 from api.db import CONNECTION
@@ -96,9 +96,12 @@ class SchemesVisType():
                 districts.append(i[1])
                 values.append(i[2:])
 
-            if query_week_num[-1] == 52:
-                for i in range(len(values[0])):
-                    values[0][i] = values[0][i]+values[-1][i]
+            if not query_week_num:
+                pass
+            else:
+                if query_week_num[-1] == 52:
+                    for i in range(len(values[0])):
+                        values[0][i] = values[0][i]+values[-1][i]
 
 
             dict_hp = {}
