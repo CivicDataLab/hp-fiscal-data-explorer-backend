@@ -174,7 +174,7 @@ class TreasuryExpenditureVisType():
                end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
                offset_temp = (end_temp.weekday() - 5)%7
                last_saturday_temp = end_temp - timedelta(days=offset_temp)
-               week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1]+1)] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
+               week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1])] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
                
             else:
                 
@@ -216,6 +216,11 @@ class TreasuryExpenditureVisType():
             for i in records:
                 districts.append(i[1])
                 values.append(i[2:])
+
+            if query_week_num[-1] == 52:
+                for i in range(len(values[0])):
+                    values[0][i] = values[0][i]+values[-1][i]
+
 
             dict_hp = {}
 
