@@ -7,8 +7,6 @@ from api.utils import validate_date, CORSMiddleware, validate_vis_range
 import time
 import pandas as pd
 
-
-
 @falcon.before(validate_date)
 @falcon.before(validate_vis_range)
 class SchemesVisType():
@@ -46,19 +44,19 @@ class SchemesVisType():
 
             offset_final = (end.weekday() - 5)%7
             last_saturday_final = end - timedelta(days=offset_final)
-            
+
             if (int(end_month) < int(start_month) or int(end_month) == 12):
 
                end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
                offset_temp = (end_temp.weekday() - 5)%7
                last_saturday_temp = end_temp - timedelta(days=offset_temp)
                week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1])] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
-               
+
             else:
-                
+
                 week_number = [*range(week_start_range,last_saturday_final.isocalendar()[1]+1)]
-            
-            
+
+
             select = "SELECT Week(DATE(TRANSDATE)),District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_budget_schemes_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
@@ -69,18 +67,18 @@ class SchemesVisType():
                 where += "AND {key} IN ({value})".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
             print(query_string)
-          
+
             query = CONNECTION.execute(query_string)
             data_rows = query.fetchall()
             records = []
-            
+
             for row in data_rows:
                 records.append(row.values())
 
             query_week_num = []
             for i in records:
                 query_week_num.append(i[0])
-            
+
             dict_hp = {}
 
             districts = []
@@ -111,7 +109,7 @@ class SchemesVisType():
             for i in list_comp:
                 for key,values in dict_hp.items():
                     if  i not in [j for i in values for j in i]:
-                        dict_hp[key].append([i,[0,0,0,0]]) 
+                        dict_hp[key].append([i,[0,0,0,0]])
                     else:
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
@@ -123,8 +121,8 @@ class SchemesVisType():
                         if week_number[num]== i[0]:
                            records_temp.append(i)
                 dict_hp[key] = records_temp
-            
-            
+
+
             for key in dict_hp:
                 dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
 
@@ -149,15 +147,15 @@ class SchemesVisType():
             for key, value in payload['filters'].items():
                where += "AND {key} IN ({value})".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
-            
+
             query = CONNECTION.execute(query_string)
             data_rows = query.fetchall()
             records = []
 
-             
+
             for row in data_rows:
                 records.append(row.values())
-            
+
             records_temp = []
 
             query_month_num = []
@@ -180,11 +178,11 @@ class SchemesVisType():
 
             for i in range(0,len(districts)):
                 dict_hp[districts[i]].append([query_month_num[i],values_record[i][0:]])
-            
+
             for month_num in total_month_number:
                 for key,values in dict_hp.items():
                     if  month_num not in [val for rec in values for val in rec]:
-                        dict_hp[key].append([month_num,[0,0,0,0]]) 
+                        dict_hp[key].append([month_num,[0,0,0,0]])
                     else:
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
@@ -199,12 +197,13 @@ class SchemesVisType():
 
             for key in dict_hp:
                 dict_hp[key] =[key_[1:][0] for key_ in dict_hp[key]]
-           
+
 
             data_response = json.dumps({'records': dict_hp, 'count': len(records)})
 
             resp.status = falcon.HTTP_200  #pylint: disable=no-member
             resp.body = data_response
+
 
 
 class SchemesAccountHeads():
@@ -260,6 +259,7 @@ class SchemesAccountHeads():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps({'records':dict_hp})  
 
+>>>>>>> Stashed changes
 class UniqueAccountHeadsSchemes():
     '''
     This API will give permutations and combinations of all account heads

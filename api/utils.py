@@ -10,6 +10,9 @@ class CORSMiddleware:
         process request to set headers.
         '''
         resp.set_header('Access-Control-Allow-Origin', '*')
+        resp.set_header('Access-Control-Allow-Headers', '*')
+        resp.set_header('Access-Control-Allow-Methods', '*')
+
         
 def validate_date(req, resp, resource, params):
     '''

@@ -270,7 +270,7 @@ class UniqueAccountHeadsTreaReceipts():
         '''
         Method for getting Permutations Combinations of account heads
         '''
-        query_string = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='himachal_pradesh_expenditure_data' AND `TABLE_NAME`='himachal_pradesh_district_receipts_data'"  # pylint: disable=line-too-long
+        query_string = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='himachal_pradesh_data' AND `TABLE_NAME`='himachal_pradesh_district_receipts_data'"  # pylint: disable=line-too-long
         get_column_names = CONNECTION.execute(query_string)
         column_names = get_column_names.fetchall()
         
