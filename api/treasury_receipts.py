@@ -49,7 +49,7 @@ class TreasuryReceiptsVisType():
             offset_final = (end.weekday() - 5)%7
             last_saturday_final = end - timedelta(days=offset_final)
             
-            if (end_month <= start_month or end_month == 12):
+            if (int(end_month) < int(start_month) or int(end_month) == 12):
 
                end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
                offset_temp = (end_temp.weekday() - 5)%7
