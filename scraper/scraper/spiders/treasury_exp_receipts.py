@@ -17,7 +17,7 @@ class TreasuryExpendituresSpider(treasury_base.TreasuryBaseSpider):
     # dataset is collected from here.
     query_url = 'https://himkosh.hp.nic.in/treasuryportal/eKosh/eKoshDDOPopUp.asp?{}'
 
-    query_index = 10
+    query_index = 9
 
 
 class TreasuryReceiptsSpider(treasury_base.TreasuryBaseSpider):
