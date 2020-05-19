@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import falcon
 import pdb
 from api.db import CONNECTION
@@ -24,21 +24,12 @@ class TreasuryReceiptsVisType():
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
 
-        if start.strftime("%A") == 'Sunday':
-            week_number = [*range(start.isocalendar()[1],end.isocalendar()[1]-1)]
-        else:
-            week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
-
         start_month = params['start'][5:7]
         end_month = params['end'][5:7]
-
-        if end_month <= start_month:
-            month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
-        else:
-            month_range = [*range(int(start_month),int(end_month)+1)]
+        financial_year = params['start'][0:4]
 
         vis_range = params['range']
-    
+        
         req_body = req.stream.read()
         if req_body:
             payload = json.loads(req_body)
@@ -46,6 +37,34 @@ class TreasuryReceiptsVisType():
             payload = {}
         
         if vis_range == 'Week':
+
+            if start.strftime("%A") == 'Sunday':
+
+                week_start_range = start.isocalendar()[1]
+            else:
+
+                week_start_range = start.isocalendar()[1]-1
+
+
+            offset_final = (end.weekday() - 5)%7
+            last_saturday_final = end - timedelta(days=offset_final)
+            
+            if (end_month <= start_month or end_month == 12):
+
+               end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
+               offset_temp = (end_temp.weekday() - 5)%7
+               last_saturday_temp = end_temp - timedelta(days=offset_temp)
+               week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1])] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
+               
+            else:
+                
+                week_number = [*range(week_start_range,last_saturday_final.isocalendar()[1]+1)]
+
+            # if start.strftime("%A") == 'Sunday':
+            #     week_number = [*range(start.isocalendar()[1],end.isocalendar()[1]-1)]
+            # else:
+            #     week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
+
             select = "SELECT Week(DATE(BOOKDATE)),District,sum(NETRECEIPT)"
             from_str = "FROM himachal_pradesh_district_receipts_data"
             where = "WHERE BOOKDATE BETWEEN '{}' and '{}'".format(start, end)
@@ -70,10 +89,14 @@ class TreasuryReceiptsVisType():
             districts = []
             values = []
             total_week_number = list(set(week_number + query_week_num))
-        
+            
             for i in records:   
                 districts.append(i[1])
                 values.append(i[2:])
+
+            if query_week_num[-1] == 52:
+                for i in range(len(values[0])):
+                    values[0][i] = values[0][i]+values[-1][i]
 
             dict_hp = {}
 
@@ -90,6 +113,15 @@ class TreasuryReceiptsVisType():
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
 
+
+            for key,values in dict_hp.items():
+                records_temp = []
+                for num in range(len(week_number)):
+                    for i in values:
+                        if week_number[num]== i[0]:
+                           records_temp.append(i)
+                dict_hp[key] = records_temp
+
             for key in dict_hp:
                 dict_hp[key] =[key_[1:] for key_ in dict_hp[key]]
 
@@ -99,6 +131,12 @@ class TreasuryReceiptsVisType():
             resp.body = data_response
 
         else:
+
+            if end_month <= start_month:
+                month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
+            else:
+                month_range = [*range(int(start_month),int(end_month)+1)]
+
             select = "SELECT Month(DATE(BOOKDATE)),District,sum(NETRECEIPT)"
             from_str = "FROM himachal_pradesh_district_receipts_data"
             where = "WHERE BOOKDATE BETWEEN '{}' and '{}'".format(start, end)
