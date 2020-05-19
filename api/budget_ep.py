@@ -2,7 +2,7 @@
 budget data endpoints
 '''
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import falcon
 import pdb
 from api.db import CONNECTION
@@ -144,18 +144,11 @@ class TreasuryExpenditureVisType():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
-        if start.strftime("%A") == 'Sunday':
-            week_number = [*range(start.isocalendar()[1],end.isocalendar()[1]-1)]
-        else:
-            week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
-        start_month = params['start'][5:7]
-        end_month = params['end'][5:7]
         vis_range = params['range']
 
-        if end_month <= start_month:
-            month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
-        else:
-            month_range = [*range(int(start_month),int(end_month)+1)]
+        start_month = params['start'][5:7]
+        end_month = params['end'][5:7]
+        financial_year = params['start'][0:4]
 
         req_body = req.stream.read()
         if req_body:
@@ -164,6 +157,34 @@ class TreasuryExpenditureVisType():
             payload = {}
 
         if vis_range == 'Week':
+
+            if start.strftime("%A") == 'Sunday':
+
+                week_start_range = start.isocalendar()[1]
+            else:
+
+                week_start_range = start.isocalendar()[1]-1
+
+
+            offset_final = (end.weekday() - 5)%7
+            last_saturday_final = end - timedelta(days=offset_final)
+            
+            if (end_month <= start_month or end_month == 12):
+
+               end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
+               offset_temp = (end_temp.weekday() - 5)%7
+               last_saturday_temp = end_temp - timedelta(days=offset_temp)
+               week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1]+1)] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
+               
+            else:
+                
+                week_number = [*range(week_start_range,last_saturday_final.isocalendar()[1]+1)]
+
+            # if start.strftime("%A") == 'Sunday':
+            #     week_number = [*range(start.isocalendar()[1],end.isocalendar()[1]-1)]
+            # else:
+            #     week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
+
             select = "SELECT Week(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_pradesh_district_spending_data_desc"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
@@ -173,9 +194,7 @@ class TreasuryExpenditureVisType():
             for key, value in payload['filters'].items():
                 where += "AND {key} IN ({value})".format(key=key, value=value)
             query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
-            
             print(query_string)
-
             query = CONNECTION.execute(query_string)
             data_rows = query.fetchall()
             records = []
@@ -183,15 +202,15 @@ class TreasuryExpenditureVisType():
             for row in data_rows:
                 records.append(row.values())
 
-            week_num = []
+            query_week_num = []
             for i in records:
-                week_num.append(i[0])
-
+                query_week_num.append(i[0])
+            
             dict_hp = {}
 
             districts = []
             values = []
-            list_comp = list(set(week_number + week_num))
+            list_comp = list(set(week_number + query_week_num))
 
 
             for i in records:
@@ -204,7 +223,7 @@ class TreasuryExpenditureVisType():
                 dict_hp[i] = []
 
             for i in range(0,len(districts)):
-                dict_hp[districts[i]].append([week_num[i],values[i][0:]])
+                dict_hp[districts[i]].append([query_week_num[i],values[i][0:]])
 
             for i in list_comp:
                 for key,values in dict_hp.items():
@@ -214,6 +233,14 @@ class TreasuryExpenditureVisType():
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
 
+            for key,values in dict_hp.items():
+                records_temp = []
+                for num in range(len(week_number)):
+                    for i in values:
+                        if week_number[num]== i[0]:
+                           records_temp.append(i)
+                dict_hp[key] = records_temp
+            
             for key in dict_hp:
                 dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
 
@@ -222,6 +249,12 @@ class TreasuryExpenditureVisType():
             resp.status = falcon.HTTP_200  #pylint: disable=no-member
             resp.body = data_response
         else:
+
+            if end_month <= start_month:
+                month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
+            else:
+                month_range = [*range(int(start_month),int(end_month)+1)]
+
             select = "SELECT Month(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
             from_str = "FROM himachal_pradesh_district_spending_data_desc"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
