@@ -65,7 +65,7 @@ class SchemesVisType():
             #     week_number = [*range(start.isocalendar()[1]-1,end.isocalendar()[1]-1)]
 
             select = "SELECT Week(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
-            from_str = "FROM himachal_pradesh_district_spending_data_desc"
+            from_str = "FROM himachal_budget_schemes_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
 
@@ -140,7 +140,7 @@ class SchemesVisType():
                 month_range = [*range(int(start_month),int(end_month)+1)]
 
             select = "SELECT Month(DATE(TRANSDATE)),district,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
-            from_str = "FROM himachal_pradesh_district_spending_data_desc"
+            from_str = "FROM himachal_budget_schemes_data"
             where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY district, {}(DATE(TRANSDATE))".format(vis_range)
 
