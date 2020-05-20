@@ -224,9 +224,6 @@ class TreasuryExpenditureVisType():
                     for i in range(len(values[0])):
                         values[0][i] = values[0][i]+values[-1][i]
 
-
-
-
             dict_hp = {}
 
             for i in districts:
