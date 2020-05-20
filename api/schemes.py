@@ -92,7 +92,7 @@ class SchemesVisType():
                 districts.append(i[1])
                 values.append(i[2:])
 
-            if not query_week_num:
+            if len(query_week_num) == 0:
                 pass
             else:
                 if query_week_num[-1] == 52:
