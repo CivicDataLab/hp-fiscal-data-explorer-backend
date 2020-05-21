@@ -31,11 +31,134 @@ class SchemesVisType():
         else:
             payload = {}
 
-    
-        select = "SELECT District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
-        from_str = "FROM himachal_budget_schemes_data"
-        where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
-        groupby = "GROUP BY District, {}(DATE(TRANSDATE))".format(vis_range)
+        if vis_range == 'Week':
+
+            if start.strftime("%A") == 'Sunday':
+
+                week_start_range = start.isocalendar()[1]
+            else:
+
+                week_start_range = start.isocalendar()[1]-1
+
+            offset_final = (end.weekday() - 5)%7
+            last_saturday_final = end - timedelta(days=offset_final)
+            
+            if (int(end_month) < int(start_month) or int(end_month) == 12):
+
+               end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
+               offset_temp = (end_temp.weekday() - 5)%7
+               last_saturday_temp = end_temp - timedelta(days=offset_temp)
+               week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1])] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
+               
+            else:
+                
+                week_number = [*range(week_start_range,last_saturday_final.isocalendar()[1]+1)]
+            
+            
+            select = "SELECT Week(DATE(TRANSDATE)),District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
+            from_str = "FROM himachal_budget_schemes_data"
+            where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
+            groupby = "GROUP BY District, {}(DATE(TRANSDATE))".format(vis_range)
+
+
+            for key, value in payload['filters'].items():
+                where += "AND {key} IN ({value})".format(key=key, value=value)
+            query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
+            print(query_string)
+          
+            query = CONNECTION.execute(query_string)
+            data_rows = query.fetchall()
+            records = []
+            
+            for row in data_rows:
+                records.append(row.values())
+
+            query_week_num = []
+            for i in records:
+                query_week_num.append(i[0])
+            
+            dict_hp = {}
+
+            districts = []
+            values = []
+            list_comp = list(set(week_number + query_week_num))
+
+
+            for i in records:
+                districts.append(i[1])
+                values.append(i[2:])
+
+            if len(query_week_num) == 0:
+                pass
+            else:
+                if query_week_num[-1] == 52:
+                    for i in range(len(values[0])):
+                        values[0][i] = values[0][i]+values[-1][i]
+
+
+            dict_hp = {}
+
+            for i in districts:
+                dict_hp[i] = []
+
+            for i in range(0,len(districts)):
+                dict_hp[districts[i]].append([query_week_num[i],values[i][0:]])
+
+            for i in list_comp:
+                for key,values in dict_hp.items():
+                    if  i not in [j for i in values for j in i]:
+                        dict_hp[key].append([i,[0,0,0,0]]) 
+                    else:
+                        pass
+                    dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
+
+            for key,values in dict_hp.items():
+                records_temp = []
+                for num in range(len(week_number)):
+                    for i in values:
+                        if week_number[num]== i[0]:
+                           records_temp.append(i)
+                dict_hp[key] = records_temp
+            
+            
+            for key in dict_hp:
+                dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
+
+            data_response = json.dumps({'records': dict_hp, 'count': len(records)})
+
+            resp.status = falcon.HTTP_200  #pylint: disable=no-member
+            resp.body = data_response
+
+        else:
+
+            if end_month <= start_month:
+                month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
+            else:
+                month_range = [*range(int(start_month),int(end_month)+1)]
+
+            select = "SELECT Month(DATE(TRANSDATE)),District,sum(GROSS), sum(AGDED), sum(BTDED), sum(NETPAYMENT)"
+            from_str = "FROM himachal_budget_schemes_data"
+            where = "WHERE TRANSDATE BETWEEN '{}' and '{}'".format(start, end)
+            groupby = "GROUP BY District, {}(DATE(TRANSDATE))".format(vis_range)
+
+
+            for key, value in payload['filters'].items():
+               where += "AND {key} IN ({value})".format(key=key, value=value)
+            query_string = select + ' ' + from_str + ' ' + where + ' ' + groupby
+            
+            query = CONNECTION.execute(query_string)
+            data_rows = query.fetchall()
+            records = []
+
+             
+            for row in data_rows:
+                records.append(row.values())
+            
+            records_temp = []
+            query_month_num = []
+
+            for i in records:
+                query_month_num.append(i[0])
 
 
         for key, value in payload['filters'].items():
