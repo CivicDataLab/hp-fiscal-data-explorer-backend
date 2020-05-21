@@ -159,7 +159,6 @@ class SchemesVisType():
                 records.append(row.values())
             
             records_temp = []
-
             query_month_num = []
 
             for i in records:
