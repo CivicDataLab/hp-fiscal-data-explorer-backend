@@ -76,11 +76,6 @@ class DetailReceiptsWeek():
         for row in data_rows:
             records.append(row.values())
 
-        query_week_num = []
-        for i in records:
-            query_week_num.append(i[0])
-
-
         for i in week_number:
             if  i not in [j for i in records for j in i]:
                 records.append([i,0])
@@ -100,6 +95,7 @@ class DetailReceiptsWeek():
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
 
+
 @falcon.before(validate_date)
 class DetailReceiptsMonth():
     '''
@@ -112,6 +108,16 @@ class DetailReceiptsMonth():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
+        start_month = params['start'][5:7]
+        end_month = params['end'][5:7]
+        financial_year = params['start'][0:4]
+
+
+        if end_month <= start_month:
+            month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
+        else:
+            month_range = [*range(int(start_month),int(end_month)+1)]
+
 
         req_body = req.stream.read()
         if req_body:
@@ -127,7 +133,7 @@ class DetailReceiptsMonth():
                 GROUP BY MONTH(DATE(date))
             """
         else:
-            select = "SELECT sum(Total_Receipt)"
+            select = "SELECT Month(DATE(date)),sum(Total_Receipt)"
             from_str = "FROM himachal_budget_receipts_data"
             where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY MONTH(DATE(date))"
@@ -139,10 +145,25 @@ class DetailReceiptsMonth():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        print(query_string)
+
         for row in data_rows:
             records.append(row.values())
-        data_response = json.dumps({'records': records, 'count': len(records)})
+
+        for i in month_range:
+            if  i not in [j for i in records for j in i]:
+                records.append([i,0])
+
+        records_sorted = []
+        
+        for num in range(len(month_range)):
+            for i in records:
+                if month_range[num] == i[0]:
+                   records_sorted.append(i)
+
+        for i in records_sorted:
+            i.pop(0)
+
+        data_response = json.dumps({'records': records_sorted, 'count': len(records)})
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
