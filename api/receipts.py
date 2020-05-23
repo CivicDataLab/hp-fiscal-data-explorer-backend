@@ -2,7 +2,7 @@
 receipts data endpoints
 '''
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import falcon
 from api.db import CONNECTION
 from api.utils import validate_date, CORSMiddleware
@@ -19,6 +19,9 @@ class DetailReceiptsWeek():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
+        start_month = params['start'][5:7]
+        end_month = params['end'][5:7]
+        financial_year = params['start'][0:4]
 
         req_body = req.stream.read()
         if req_body:
@@ -34,7 +37,30 @@ class DetailReceiptsWeek():
                 GROUP BY WEEK(DATE(date))
             """
         else:
-            select = "SELECT sum(Total_Receipt)"
+
+            if start.strftime("%A") == 'Sunday':
+
+                week_start_range = start.isocalendar()[1]
+            else:
+
+                week_start_range = start.isocalendar()[1]-1
+
+            offset_final = (end.weekday() - 5)%7
+            last_saturday_final = end - timedelta(days=offset_final)
+            
+            if (int(end_month) < int(start_month) or (end_month) == 12):
+
+               end_temp = datetime.strptime(financial_year + '-12-31', '%Y-%m-%d')
+               offset_temp = (end_temp.weekday() - 5)%7
+               last_saturday_temp = end_temp - timedelta(days=offset_temp)
+               week_number = [*range(week_start_range,last_saturday_temp.isocalendar()[1])] + [*range(0,last_saturday_final.isocalendar()[1]+1)]
+               
+            else:
+                
+                week_number = [*range(week_start_range,last_saturday_final.isocalendar()[1]+1)]
+            
+            
+            select = "SELECT Week(DATE(date)),sum(Total_Receipt)"
             from_str = "FROM himachal_budget_receipts_data"
             where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY WEEK(DATE(date))"
@@ -46,13 +72,29 @@ class DetailReceiptsWeek():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        print(query_string)
+
         for row in data_rows:
             records.append(row.values())
-        data_response = json.dumps({'records': records, 'count': len(records)})
+
+        for i in week_number:
+            if  i not in [j for i in records for j in i]:
+                records.append([i,0])
+
+        records_sorted = []
+                
+        for num in range(len(week_number)):
+            for i in records:
+                if week_number[num] == i[0]:
+                   records_sorted.append(i)
+
+        for i in records_sorted:
+            i.pop(0)
+
+        data_response = json.dumps({'records': records_sorted, 'count': len(records)})
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
+
 
 @falcon.before(validate_date)
 class DetailReceiptsMonth():
@@ -66,6 +108,16 @@ class DetailReceiptsMonth():
         params = req.params
         start = datetime.strptime(params['start'], '%Y-%m-%d')
         end = datetime.strptime(params['end'], '%Y-%m-%d')
+        start_month = params['start'][5:7]
+        end_month = params['end'][5:7]
+        financial_year = params['start'][0:4]
+
+
+        if end_month <= start_month:
+            month_range = [*range(int(start_month),13)] + [*range(1,int(end_month)+1)]
+        else:
+            month_range = [*range(int(start_month),int(end_month)+1)]
+
 
         req_body = req.stream.read()
         if req_body:
@@ -81,7 +133,7 @@ class DetailReceiptsMonth():
                 GROUP BY MONTH(DATE(date))
             """
         else:
-            select = "SELECT sum(Total_Receipt)"
+            select = "SELECT Month(DATE(date)),sum(Total_Receipt)"
             from_str = "FROM himachal_budget_receipts_data"
             where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY MONTH(DATE(date))"
@@ -93,10 +145,25 @@ class DetailReceiptsMonth():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
-        print(query_string)
+
         for row in data_rows:
             records.append(row.values())
-        data_response = json.dumps({'records': records, 'count': len(records)})
+
+        for i in month_range:
+            if  i not in [j for i in records for j in i]:
+                records.append([i,0])
+
+        records_sorted = []
+        
+        for num in range(len(month_range)):
+            for i in records:
+                if month_range[num] == i[0]:
+                   records_sorted.append(i)
+
+        for i in records_sorted:
+            i.pop(0)
+
+        data_response = json.dumps({'records': records_sorted, 'count': len(records)})
 
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = data_response
