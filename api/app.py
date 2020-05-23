@@ -4,7 +4,7 @@ api definition
 
 import falcon
 
-from api import budget_ep, receipts, schemes, treasury_receipts, budget_exp_summary
+from api import budget_ep, receipts, schemes, treasury_receipts, budget_exp_summary,treasury_exp_temp
 
 # create API
 api = app = falcon.API(middleware=[budget_ep.CORSMiddleware(), receipts.CORSMiddleware()])
@@ -31,3 +31,6 @@ api.add_route('/api/acc_heads_receipts', receipts.ReceiptsAccountHeads())
 api.add_route('/api/acc_heads_schemes',schemes.SchemesAccountHeads())
 api.add_route('/api/schemes', schemes.SchemesVisType())
 api.add_route('/api/allocation_exp_summary', budget_exp_summary.AllocationExpenditureSummary())
+
+#temprory APIs
+api.add_route('/api/treasury_exp_temp', treasury_exp_temp.TreasuryExpenditureTempVisType())
