@@ -125,8 +125,8 @@ class SchemesVisType():
                 dict_hp[key] = records_temp
             
             
-            for key in dict_hp:
-                dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
+            # for key in dict_hp:
+            #     dict_hp[key] =[i[1:][0] for i in dict_hp[key]]
 
             data_response = json.dumps({'records': dict_hp, 'count': len(records)})
 

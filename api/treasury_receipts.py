@@ -125,8 +125,8 @@ class TreasuryReceiptsVisType():
                            records_temp.append(i)
                 dict_hp[key] = records_temp
 
-            for key in dict_hp:
-                dict_hp[key] =[key_[1:] for key_ in dict_hp[key]]
+            # for key in dict_hp:
+            #     dict_hp[key] =[key_[1:] for key_ in dict_hp[key]]
 
             data_response = json.dumps({'records': dict_hp, 'count': len(records)})
 
