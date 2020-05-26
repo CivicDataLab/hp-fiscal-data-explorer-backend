@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timedelta
 import falcon
 from api.db import CONNECTION
+import pdb  
 from api.utils import validate_date, CORSMiddleware
 
 @falcon.before(validate_date)
@@ -72,23 +73,35 @@ class DetailReceiptsWeek():
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
+        query_week_num = []
+        values = []
 
         for row in data_rows:
             records.append(row.values())
+        for i in records:
+            query_week_num.append(i[0])
+            values.append(i[1:])
+
+        records_new = []
+
+        for i in range(len(query_week_num)):
+            records_new.append([query_week_num[i],values[i]])
+
 
         for i in week_number:
             if  i not in [j for i in records for j in i]:
-                records.append([i,0])
+                records_new.append([i,[0]])
 
         records_sorted = []
                 
         for num in range(len(week_number)):
-            for i in records:
+            for i in records_new:
                 if week_number[num] == i[0]:
                    records_sorted.append(i)
-
-        for i in records_sorted:
-            i.pop(0)
+            
+       
+        # for i in records_sorted:
+        #     i.pop(0)
 
         data_response = json.dumps({'records': records_sorted, 'count': len(records)})
 
