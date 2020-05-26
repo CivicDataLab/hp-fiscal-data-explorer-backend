@@ -106,16 +106,16 @@ class TreasuryReceiptsVisType():
             for dist_name in districts:
                 dict_hp[dist_name] = []
             for dist_len in range(0,len(districts)):
-                dict_hp[districts[dist_len]].append([query_week_num[dist_len],values[dist_len][0]])
+                dict_hp[districts[dist_len]].append([query_week_num[dist_len],[values[dist_len][0]]])
 
             for week_num in total_week_number:
                 for key,values in dict_hp.items():
                     if  week_num not in [val for rec in values for val in rec]:
-                        dict_hp[key].append([week_num,0]) 
+                        dict_hp[key].append([week_num,[0]]) 
                     else:
                         pass
                     dict_hp[key] = sorted(dict_hp[key], key=lambda x: x[0])
-
+            
 
             for key,values in dict_hp.items():
                 records_temp = []
