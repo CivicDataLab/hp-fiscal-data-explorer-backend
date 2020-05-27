@@ -548,34 +548,49 @@ class UniqueAccountHeadsTreasury():
         '''
         Method for getting Permutations Combinations of account heads
         '''
-        query_string = "SELECT `COLUMN_NAME`  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='himachal_pradesh_data' AND `TABLE_NAME`='himachal_pradesh_district_spending_data_desc'"  # pylint: disable=line-too-long
-        get_column_names = CONNECTION.execute(query_string)
-        column_names = get_column_names.fetchall()
+       
+        # column_names_list  =  [row.values() for row in column_names]     
         
-        column_names_list  =  [row.values() for row in column_names]     
+        # list_acc_heads_with_desc =column_names_list[2:16] + column_names_list[19:21]
         
-        list_acc_heads_with_desc =column_names_list[2:16] + column_names_list[19:21]
-        
-        list_acc_heads_without_desc = column_names_list[1:2] + column_names_list[16:19]
-        list_acc_heads_without_desc = [acc_heads for acc_heads_value in list_acc_heads_without_desc  for acc_heads in acc_heads_value]
+        # list_acc_heads_without_desc = column_names_list[1:2] + column_names_list[16:19]
+        # list_acc_heads_without_desc = [acc_heads for acc_heads_value in list_acc_heads_without_desc  for acc_heads in acc_heads_value]
         dict_unique_acc_heads = {}
-        #pdb.set_trace()
-    
-        for acc_heads_index in range(0,15,2):
-            query_select = "select distinct concat_ws('-',{},{}) from himachal_pradesh_district_spending_data_desc".format(list_acc_heads_with_desc[acc_heads_index][0],list_acc_heads_with_desc[acc_heads_index+1][0])
+
+        table_name = ['treasury_unique_heads',
+                      'ddo_unique_heads','demand_unique_heads',
+                      'major_unique_heads','sub_major_unique_heads',
+                      'minor_unique_heads','sub_minor_unique_heads','SOE_unique_heads','district_unique_heads',
+                      'budget_unique_heads','v_c_unique_heads','p_n_unique_heads']
+
+        column_names_new = ['Treasury_Code','DDO_Code','demand','major','sub_major','minor','sub_minor','SOE','District',
+                            'budget','voted_charged','plan_nonplan']
+        
+        
+        for acc_heads_index in range(0,12):
+            query_select = "select {} from {}".format(column_names_new[acc_heads_index],table_name[acc_heads_index])
             query_unique_acc_heads = CONNECTION.execute(query_select)
             unique_acc_heads_value = query_unique_acc_heads.fetchall()
             unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
             unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
-            dict_unique_acc_heads[list_acc_heads_with_desc[acc_heads_index][0]] = unique_acc_heads_value_list
+            dict_unique_acc_heads[column_names_new[acc_heads_index]] = unique_acc_heads_value_list
 
-        for acc_heads_index in range(0,4):
-            query_select = "select distinct {} from himachal_pradesh_district_spending_data_desc".format(list_acc_heads_without_desc[acc_heads_index])
-            query_unique_acc_heads = CONNECTION.execute(query_select)
-            unique_acc_heads_value = query_unique_acc_heads.fetchall()
-            unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
-            unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
-            dict_unique_acc_heads[list_acc_heads_without_desc[acc_heads_index]] = unique_acc_heads_value_list
 
+        # for acc_heads_index in range(0,15,2):
+        #     query_select = "select distinct concat_ws('-',{},{}) from himachal_pradesh_district_spending_data_desc".format(list_acc_heads_with_desc[acc_heads_index][0],list_acc_heads_with_desc[acc_heads_index+1][0])
+        #     query_unique_acc_heads = CONNECTION.execute(query_select)
+        #     unique_acc_heads_value = query_unique_acc_heads.fetchall()
+        #     unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
+        #     unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
+        #     dict_unique_acc_heads[list_acc_heads_with_desc[acc_heads_index][0]] = unique_acc_heads_value_list
+
+        # for acc_heads_index in range(0,4):
+        #     query_select = "select distinct {} from himachal_pradesh_district_spending_data_desc".format(list_acc_heads_without_desc[acc_heads_index])
+        #     query_unique_acc_heads = CONNECTION.execute(query_select)
+        #     unique_acc_heads_value = query_unique_acc_heads.fetchall()
+        #     unique_acc_heads_value_list =  [row_acc.values() for row_acc in unique_acc_heads_value] 
+        #     unique_acc_heads_value_list = [acc_heads for acc_heads_value in unique_acc_heads_value_list for acc_heads in acc_heads_value]
+        #     dict_unique_acc_heads[list_acc_heads_without_desc[acc_heads_index]] = unique_acc_heads_value_list
+        # pdb.set_trace()
         resp.status = falcon.HTTP_200  #pylint: disable=no-member
         resp.body = json.dumps(dict_unique_acc_heads)
