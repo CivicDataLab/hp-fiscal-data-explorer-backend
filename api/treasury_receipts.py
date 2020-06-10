@@ -94,6 +94,11 @@ class TreasuryReceiptsVisType():
                 districts.append(i[1])
                 values.append(i[2:])
 
+            for i in values:
+                i[0] = round(i[0]/100000,2)
+
+           
+
             if len(query_week_num) == 0:
                 pass
             else:
