@@ -62,7 +62,7 @@ class DetailReceiptsWeek():
             
             
             select = "SELECT Week(DATE(date)),sum(Total_Receipt)"
-            from_str = "FROM himachal_budget_receipts_data"
+            from_str = "FROM himachal_budget_receipts_data_1"
             where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY WEEK(DATE(date))"
 
@@ -141,13 +141,13 @@ class DetailReceiptsMonth():
         if not payload:
             query_string = """
                 SELECT sum(Total_Receipt)
-                FROM himachal_budget_receipts_data
+                FROM himachal_budget_receipts_data_1
                 WHERE date BETWEEN '{}' and '{}'
                 GROUP BY MONTH(DATE(date))
             """
         else:
             select = "SELECT Month(DATE(date)),sum(Total_Receipt)"
-            from_str = "FROM himachal_budget_receipts_data"
+            from_str = "FROM himachal_budget_receipts_data_1"
             where = "WHERE date BETWEEN '{}' and '{}'".format(start, end)
             groupby = "GROUP BY MONTH(DATE(date))"
 
@@ -189,7 +189,7 @@ class ReceiptsAccountHeads():
         '''
         Method for getting Permutations Combinations of account heads
         '''
-        query_string = "select major, major_desc, sub_major,minor,sub_minor, sub_minor_desc from himachal_budget_receipts_data GROUP BY major,major_desc, sub_major ,minor, sub_minor, sub_minor_desc"  # pylint: disable=line-too-long
+        query_string = "select major, major_desc, sub_major,minor,sub_minor, sub_minor_desc from himachal_budget_receipts_data_1 GROUP BY major,major_desc, sub_major ,minor, sub_minor, sub_minor_desc"  # pylint: disable=line-too-long
         query = CONNECTION.execute(query_string)
         data_rows = query.fetchall()
         records = []
