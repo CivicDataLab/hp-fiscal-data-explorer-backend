@@ -4,7 +4,7 @@ api definition
 
 import falcon
 
-from api import budget_ep, receipts, schemes, treasury_receipts, budget_exp_summary,treasury_exp_temp,budget_heads_temp,covid_spending
+from api import budget_ep, receipts, schemes, treasury_receipts, budget_exp_summary,treasury_exp_temp,budget_heads_temp,covid_spending, procurements_datatable
 
 # create API
 api = app = falcon.API(middleware=[budget_ep.CORSMiddleware(), receipts.CORSMiddleware()])
@@ -40,3 +40,8 @@ api.add_route('/api/heads_temp', budget_heads_temp.TreasuryAccountHeadsTemp())
 #covid
 
 api.add_route('/api/covid_summary', covid_spending.CovidSpending())
+
+#procurements
+
+api.add_route('/api/procurement_tenders',procurements_datatable.TenderDatatable())
+api.add_route('/api/procurement_awards',procurements_datatable.AwardsDatatable())
